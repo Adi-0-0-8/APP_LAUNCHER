@@ -6,13 +6,47 @@
   "author": "Your Name",
   "scripts": {
     "start": "electron .",
-    "build": "echo Building portable version... && if exist dist rmdir /s /q dist && mkdir dist && xcopy /E /I /Y . dist\\AppLauncher\\ /EXCLUDE:build-exclude.txt && echo Build complete! Portable app is in: dist\\AppLauncher"
+    "build": "electron-builder --win portable --config",
+    "build:dir": "electron-builder --win --dir"
   },
   "dependencies": {
     "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-packager": "^17.1.2"
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.launcher.app",
+    "productName": "AppLauncher",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      ".env",
+      "renderer/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "portable": {
+      "artifactName": "AppLauncher-Portable.exe"
+    },
+    "compression": "maximum",
+    "asar": true,
+    "asarUnpack": [".env"],
+    "npmRebuild": false,
+    "nodeGypRebuild": false
   }
 }

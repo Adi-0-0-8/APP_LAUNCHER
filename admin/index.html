@@ -3,809 +3,532 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Launcher Admin Panel</title>
+  <title>App Launcher</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #0a0a0a;
-      min-height: 100vh;
-      padding: 40px 20px;
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
       overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════
+       DARK SCENE with vivid colour orbs
+       — this is what the glass refracts
+       ══════════════════════════════════════ */
+    body {
+      background: #0c0c14;
       position: relative;
+      min-height: 100vh;
     }
 
-    /* Animated background lights */
-    body::before,
-    body::after {
-      content: '';
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.15;
-      animation: float 25s infinite ease-in-out;
-      z-index: 0;
-      pointer-events: none;
+    /* Fixed gradient layer */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 65% 55% at 12% 18%,  #7c3aed 0%, transparent 58%),
+        radial-gradient(ellipse 50% 60% at 85% 12%,  #0ea5e9 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 75% 82%,  #ec4899 0%, transparent 52%),
+        radial-gradient(ellipse 45% 50% at 18% 80%,  #10b981 0%, transparent 50%),
+        radial-gradient(ellipse 35% 35% at 50% 48%,  #f59e0b 0%, transparent 55%),
+        #0c0c14;
     }
 
-    body::before {
-      width: 800px;
-      height: 800px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      top: -300px;
-      left: -300px;
-      animation-delay: 0s;
+    /* Animated soft orbs floating */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(72px); pointer-events: none; z-index: 0;
+      mix-blend-mode: screen;
     }
+    .o1 { width: 580px; height: 580px; background: #7c3aed; opacity: .55; top: -160px; left: -120px; animation: f1 26s ease-in-out infinite; }
+    .o2 { width: 480px; height: 480px; background: #0ea5e9; opacity: .50; top: -40px; right: -80px; animation: f2 32s ease-in-out infinite; }
+    .o3 { width: 420px; height: 420px; background: #ec4899; opacity: .50; bottom: -80px; right: 5%;  animation: f3 22s ease-in-out infinite; }
+    .o4 { width: 380px; height: 380px; background: #10b981; opacity: .45; bottom: -60px; left: 8%;  animation: f4 28s ease-in-out infinite; }
+    .o5 { width: 280px; height: 280px; background: #f59e0b; opacity: .40; top: 42%; left: 42%;      animation: f5 19s ease-in-out infinite; }
 
-    body::after {
-      width: 700px;
-      height: 700px;
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
-      bottom: -250px;
-      right: -250px;
-      animation-delay: 7s;
-    }
+    @keyframes f1 { 0%,100%{transform:translate(0,0) scale(1)}   40%{transform:translate(70px,90px) scale(1.1)}  70%{transform:translate(-30px,40px) scale(.93)} }
+    @keyframes f2 { 0%,100%{transform:translate(0,0) scale(1)}   35%{transform:translate(-80px,65px) scale(1.08)} 65%{transform:translate(40px,-35px) scale(.92)} }
+    @keyframes f3 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(50px,-70px) scale(1.12)} }
+    @keyframes f4 { 0%,100%{transform:translate(0,0) scale(1)}   45%{transform:translate(-45px,50px) scale(1.07)} }
+    @keyframes f5 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(30px,-35px) scale(1.09)} }
 
-    /* Additional light effect */
-    .light-effect {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      background: linear-gradient(135deg, #ec4899, #8b5cf6);
-      border-radius: 50%;
-      filter: blur(140px);
-      opacity: 0.1;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation: pulse 15s infinite ease-in-out;
-      z-index: 0;
-      pointer-events: none;
-    }
+    /* ══════════════════════════════════════
+       LIQUID GLASS MATERIAL
+       Clear glass — colour comes from behind
+       ══════════════════════════════════════ */
 
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(150px, -100px) scale(1.15); }
-      66% { transform: translate(-100px, 150px) scale(0.85); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 0.15; transform: translate(-50%, -50%) scale(1.1); }
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 50px;
-      color: #fff;
-      font-size: 3rem;
-      font-weight: 700;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      letter-spacing: -1px;
-    }
-
-    /* Glass card effect */
+    /* Card glass */
     .glass-card {
-      background: rgba(20, 20, 20, 0.6);
+      position: relative;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
+      -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.55) inset,  /* top specular rim */
+        0 -1px  0 rgba(255,255,255,0.10) inset,  /* bottom rim */
+        0 20px 60px rgba(0,0,0,0.40),
+        0  4px 16px rgba(0,0,0,0.25);
+      overflow: hidden;
+      transition: border-color .35s ease, box-shadow .35s ease, transform .4s cubic-bezier(.34,1.46,.64,1);
+    }
+    /* Top-left specular flash */
+    .glass-card::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit; z-index: 1; pointer-events: none;
+      background: linear-gradient(
+        148deg,
+        rgba(255,255,255,0.55) 0%,
+        rgba(255,255,255,0.18) 14%,
+        rgba(255,255,255,0.02) 35%,
+        transparent 55%
+      );
+    }
+    /* Bottom-edge refraction bounce */
+    .glass-card::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit; z-index: 1; pointer-events: none;
+      background: linear-gradient(to bottom, transparent 65%, rgba(255,255,255,0.06) 82%, rgba(255,255,255,0.18) 100%);
+    }
+    .glass-card > * { position: relative; z-index: 2; }
+    .glass-card:hover {
+      border-color: rgba(255,255,255,0.32);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.65) inset,
+        0 -1px  0 rgba(255,255,255,0.14) inset,
+        0 28px 80px rgba(0,0,0,0.50),
+        0  6px 24px rgba(0,0,0,0.30);
+      transform: translateY(-3px);
+    }
+
+    /* ══════ PILL BUTTON — the iconic Apple glass pill ══════ */
+    .glass-pill {
+      position: relative;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 15px 32px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.28);
+      cursor: pointer; outline: none;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: -.2px;
+      overflow: hidden;
+      /* The glass lens gradient */
+      background: linear-gradient(
+        155deg,
+        rgba(255,255,255,0.38) 0%,
+        rgba(255,255,255,0.16) 22%,
+        rgba(255,255,255,0.06) 50%,
+        rgba(255,255,255,0.04) 68%,
+        rgba(255,255,255,0.12) 85%,
+        rgba(255,255,255,0.22) 100%
+      );
+      backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
+      -webkit-backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.65) inset,  /* sharp top highlight */
+        0 -1px  0 rgba(255,255,255,0.18) inset,
+        1px  0  0 rgba(255,255,255,0.16) inset,
+        -1px 0  0 rgba(255,255,255,0.16) inset,
+        0 10px 30px rgba(0,0,0,0.40),
+        0  3px  8px rgba(0,0,0,0.28);
+      transition: all .3s cubic-bezier(.34,1.46,.64,1);
+    }
+    /* Top-half gloss overlay */
+    .glass-pill::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 46%;
+      border-radius: 50px 50px 0 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.30) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .glass-pill:hover:not(:disabled) {
+      border-color: rgba(255,255,255,0.42);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.80) inset,
+        0 -1px  0 rgba(255,255,255,0.22) inset,
+        1px  0  0 rgba(255,255,255,0.22) inset,
+        -1px 0  0 rgba(255,255,255,0.22) inset,
+        0 18px 50px rgba(0,0,0,0.55),
+        0  5px 16px rgba(0,0,0,0.35);
+      transform: translateY(-2px) scale(1.015);
+    }
+    .glass-pill:active:not(:disabled) {
+      transform: scale(.98);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.50) inset, 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .glass-pill:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ══════ GLASS INPUT ══════ */
+    .glass-input {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(30px) saturate(2);
+      -webkit-backdrop-filter: blur(30px) saturate(2);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.90);
+      font-family: inherit; font-size: 16px;
+      outline: none;
+      transition: all .25s ease;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.28) inset,
+        0 4px 14px rgba(0,0,0,0.18);
+    }
+    .glass-input::placeholder { color: rgba(255,255,255,0.32); }
+    .glass-input:focus {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.35);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.40) inset,
+        0 6px 24px rgba(0,0,0,0.28),
+        0 0 0 3px rgba(255,255,255,0.06);
+    }
+
+    /* ══════ LAYOUT ══════ */
+    .page { position: relative; z-index: 1; min-height: 100vh; padding: 64px 20px 80px; }
+    .container { max-width: 640px; margin: 0 auto; }
+
+    /* ══════ HEADER ══════ */
+    .header { text-align: center; margin-bottom: 48px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 20px; border-radius: 50px; margin-bottom: 22px;
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(24px) saturate(2);
+      -webkit-backdrop-filter: blur(24px) saturate(2);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.72);
+      font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.40) inset;
+      position: relative; overflow: hidden;
+    }
+    .badge::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 50px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.30) 0%, transparent 45%);
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; flex-shrink: 0; position: relative; z-index: 1; }
+
+    .header h1 {
+      font-size: clamp(2.4rem, 7vw, 3.8rem);
+      font-weight: 700;
+      color: rgba(255,255,255,0.94);
+      letter-spacing: -2px; line-height: 1.08;
+      text-shadow: 0 2px 40px rgba(124,58,237,0.4);
+    }
+    .header p { margin-top: 12px; font-size: 16px; color: rgba(255,255,255,0.45); font-weight: 400; }
+
+    /* ══════ FORM CARD ══════ */
+    .publish-card { padding: 34px 34px 28px; margin-bottom: 28px; }
+
+    .field-label {
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: .7px; text-transform: uppercase;
+      color: rgba(255,255,255,0.38); margin-bottom: 9px;
+    }
+    .field { margin-bottom: 14px; }
+
+    /* ══════ ADVANCED TOGGLE ══════ */
+    .adv-toggle {
+      display: flex; align-items: center; gap: 7px;
+      color: rgba(255,255,255,0.40); font-size: 14px; font-weight: 500;
+      cursor: pointer; user-select: none; width: fit-content;
+      margin-top: 4px; transition: color .2s;
+    }
+    .adv-toggle:hover { color: rgba(255,255,255,0.65); }
+    .chevron { width: 14px; height: 14px; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .adv-toggle.open .chevron { transform: rotate(90deg); }
+
+    .adv-section { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
+    .adv-section.open { max-height: 420px; margin-top: 16px; }
+
+    .divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.09); }
+    .divider span { font-size: 11px; color: rgba(255,255,255,0.28); font-weight: 600; letter-spacing: .4px; }
+
+    /* ══════ BUTTON ROW ══════ */
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
+    .btn-row .glass-pill { flex: 1; }
+
+    /* Ghost variant for upload */
+    .glass-pill-sm {
+      width: 100%; padding: 13px 20px; border-radius: 16px;
+      font-size: 14px; color: rgba(255,255,255,0.65);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 40px;
-      margin-bottom: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
-                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      transition: all 0.3s ease;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 12px rgba(0,0,0,0.20);
+    }
+    .glass-pill-sm:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.20); }
+
+    /* ══════ STATUS ══════ */
+    .status { margin-top: 14px; padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; display: none; animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+    .status.show { display: block; }
+    .status.ok  { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.28); color: #86efac; backdrop-filter: blur(20px); }
+    .status.err { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.28); color: #fca5a5; backdrop-filter: blur(20px); }
+
+    /* ══════ FILE PREVIEW ══════ */
+    .fp { display: none; align-items: center; gap: 12px; margin-top: 10px; padding: 11px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); }
+    .fp.show { display: flex; }
+    .fp img { width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
+    .fp-info { flex: 1; }
+    .fp-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.78); margin-bottom: 1px; }
+    .fp-size { font-size: 11px; color: rgba(255,255,255,0.38); }
+    .fp-rm { color: rgba(255,255,255,0.28); cursor: pointer; font-size: 20px; padding: 4px 6px; border-radius: 6px; transition: color .2s; }
+    .fp-rm:hover { color: #f87171; }
+
+    /* ══════ URL CARD LIST ══════ */
+    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 4px; }
+    .list-title { font-size: 11px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+    .count-badge {
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.50);
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(16px); padding: 2px 10px; border-radius: 50px;
     }
 
-    .glass-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(99, 102, 241, 0.3);
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5),
-                  0 0 40px rgba(99, 102, 241, 0.1),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    .urls-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .url-card { padding: 18px 22px; display: flex; align-items: center; gap: 16px; animation: pop .45s cubic-bezier(.34,1.56,.64,1); }
+
+    /* Icon pill */
+    .icon-wrap { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
+    .icon-wrap::before {
+      content: ''; position: absolute; inset: 0; border-radius: 14px;
+      background: linear-gradient(140deg, rgba(255,255,255,0.55) 0%, transparent 55%);
+      z-index: 2; pointer-events: none;
+    }
+    .icon-wrap img {
+      width: 50px; height: 50px; border-radius: 14px;
+      object-fit: contain; padding: 9px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(20px); display: block;
     }
 
-    .input-container {
-      margin-bottom: 20px;
+    .url-info { flex: 1; min-width: 0; }
+    .url-title { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .url-link  { font-size: 13px; color: rgba(255,255,255,0.40); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .url-date  { font-size: 11px; color: rgba(255,255,255,0.26); }
+
+    .btn-rm {
+      flex-shrink: 0; padding: 8px 16px; border-radius: 50px;
+      border: 1px solid rgba(248,113,113,0.25); cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      color: rgba(248,113,113,0.85);
+      background: rgba(248,113,113,0.09);
+      backdrop-filter: blur(16px); transition: all .22s;
     }
+    .btn-rm:hover { background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.45); transform: scale(1.04); }
 
-    label {
-      display: block;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    /* ══════ EMPTY STATE ══════ */
+    .empty { padding: 56px 20px; text-align: center; }
+    .empty-icon {
+      width: 68px; height: 68px; margin: 0 auto 18px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.40) inset; position: relative; overflow: hidden;
     }
+    .empty-icon::before { content: ''; position: absolute; inset: 0; border-radius: 20px; background: linear-gradient(140deg, rgba(255,255,255,0.40) 0%, transparent 50%); }
+    .empty-t { font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 5px; }
+    .empty-s { font-size: 13px; color: rgba(255,255,255,0.32); }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 16px 20px;
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      background: rgba(20, 20, 20, 0.6);
-      backdrop-filter: blur(10px);
-      color: #fff;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
+    @keyframes pop { from{opacity:0;transform:translateY(10px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
 
-    input[type="text"]:focus {
-      outline: none;
-      border-color: #6366f1;
-      background: rgba(30, 30, 30, 0.8);
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1),
-                  0 0 30px rgba(99, 102, 241, 0.2);
-    }
-
-    input[type="text"]::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    button {
-      padding: 16px 32px;
-      border: none;
-      border-radius: 16px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      color: white;
-      flex: 1;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4),
-                  0 0 40px rgba(99, 102, 241, 0.2);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6),
-                  0 0 60px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-secondary {
-      background: rgba(30, 30, 30, 0.6);
-      backdrop-filter: blur(10px);
-      color: white;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 20px;
-      font-size: 14px;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(40, 40, 40, 0.8);
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-    }
-
-    .advanced-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
-      margin-top: 16px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .advanced-toggle:hover {
-      color: #fff;
-    }
-
-    .advanced-icon {
-      font-size: 18px;
-      transition: transform 0.3s;
-    }
-
-    .advanced-toggle.active .advanced-icon {
-      transform: rotate(90deg);
-    }
-
-    .advanced-section {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    .advanced-section.show {
-      max-height: 500px;
-      margin-top: 20px;
-    }
-
-    .divider {
-      text-align: center;
-      margin: 24px 0;
-      position: relative;
-    }
-
-    .divider::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .divider span {
-      background: rgba(20, 20, 20, 0.8);
-      padding: 0 16px;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 12px;
-      font-weight: 600;
-      position: relative;
-      z-index: 1;
-    }
-
-    .file-upload-wrapper {
-      width: 100%;
-    }
-
-    .file-upload-wrapper .btn-secondary {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .upload-icon {
-      font-size: 20px;
-    }
-
-    .file-preview {
-      margin-top: 12px;
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 12px;
-    }
-
-    .file-preview.show {
-      display: flex;
-    }
-
-    .file-preview img {
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .file-preview-info {
-      flex: 1;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .file-preview-name {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .file-preview-size {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .file-remove {
-      color: rgba(255, 255, 255, 0.6);
-      cursor: pointer;
-      font-size: 20px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-
-    .file-remove:hover {
-      color: #ef4444;
-      background: rgba(239, 68, 68, 0.1);
-    }
-
-    .status-message {
-      padding: 16px 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-      display: none;
-      animation: slideIn 0.3s;
-      backdrop-filter: blur(10px);
-    }
-
-    .status-message.show {
-      display: block;
-    }
-
-    .status-message.error {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
-    }
-
-    .status-message.success {
-      background: rgba(34, 197, 94, 0.2);
-      border: 1px solid rgba(34, 197, 94, 0.5);
-      color: #86efac;
-    }
-
-    .urls-list {
-      display: grid;
-      gap: 20px;
-    }
-
-    .url-card {
-      background: rgba(20, 20, 20, 0.6);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: all 0.3s;
-      animation: fadeIn 0.4s;
-    }
-
-    .url-card:hover {
-      background: rgba(30, 30, 30, 0.8);
-      transform: translateX(8px);
-      border-color: rgba(99, 102, 241, 0.3);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-                  0 0 40px rgba(99, 102, 241, 0.15);
-    }
-
-    .url-card img {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      background: rgba(30, 30, 30, 0.8);
-      padding: 10px;
-      object-fit: contain;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .url-info {
-      flex: 1;
-    }
-
-    .url-title {
-      font-weight: 600;
-      font-size: 18px;
-      margin-bottom: 6px;
-      color: #fff;
-    }
-
-    .url-link {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 14px;
-      word-break: break-all;
-      margin-bottom: 4px;
-    }
-
-    .url-date {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 12px;
-    }
-
-    .btn-delete {
-      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-      color: white;
-      padding: 10px 24px;
-      font-size: 14px;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-    }
-
-    .btn-delete:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .empty-state svg {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
-      opacity: 0.4;
-      stroke: currentColor;
-    }
-
-    .empty-state p {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-
-    .empty-subtitle {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2rem;
-      }
-
-      .glass-card {
-        padding: 24px;
-      }
-
-      .url-card {
-        flex-direction: column;
-        text-align: center;
-      }
+    @media(max-width:600px){
+      .publish-card{padding:22px 18px;}
+      .url-card{padding:14px 16px;}
+      .header h1{letter-spacing:-1.5px;}
     }
   </style>
 </head>
 <body>
-  <div class="light-effect"></div>
-  <div class="container">
-    <h1>🚀 App Launcher</h1>
-    
-    <div class="glass-card">
-      <div class="input-container">
-        <label>Website URL</label>
-        <input 
-          type="text" 
-          id="urlInput" 
-          placeholder="https://youtube.com"
-          onkeypress="if(event.key === 'Enter' && !event.shiftKey) publishURL()"
-        >
+
+  <div class="bg"></div>
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="orb o4"></div>
+  <div class="orb o5"></div>
+
+  <div class="page">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="header">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          <span style="position:relative;z-index:1">ConneQtion UI</span>
+        </div>
+        <h1>App Launcher</h1>
+        <p>Publish and manage your web apps</p>
       </div>
 
-      <div class="advanced-toggle" onclick="toggleAdvanced()">
-        <span class="advanced-icon">▶</span>
-        <span>Advanced Options</span>
-      </div>
+      <!-- Publish card -->
+      <div class="glass-card publish-card">
+        <div class="field">
+          <span class="field-label">Website URL</span>
+          <input class="glass-input" type="text" id="urlInput" placeholder="https://youtube.com"
+            onkeypress="if(event.key==='Enter') publishURL()">
+        </div>
 
-      <div class="advanced-section" id="advancedSection">
-        <div class="input-container">
-          <label>Custom Icon URL</label>
-          <input 
-            type="text" 
-            id="iconInput" 
-            placeholder="https://example.com/icon.png"
-            onkeypress="if(event.key === 'Enter') publishURL()"
-          >
+        <div class="adv-toggle" id="advToggle" onclick="toggleAdv()">
+          <svg class="chevron" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="4,2 10,7 4,12"/></svg>
+          Advanced Options
         </div>
-        <div class="divider">
-          <span>OR</span>
-        </div>
-        <div class="input-container">
-          <label>Upload Local Image</label>
-          <div class="file-upload-wrapper">
-            <input 
-              type="file" 
-              id="fileInput" 
-              accept="image/*"
-              style="display: none;"
-              onchange="handleFileSelect()"
-            >
-            <button class="btn-secondary" onclick="document.getElementById('fileInput').click()" type="button">
-              <span class="upload-icon">📁</span>
-              <span id="fileLabel">Choose Image File</span>
-            </button>
+
+        <div class="adv-section" id="advSection">
+          <div class="field" style="margin-top:14px">
+            <span class="field-label">Custom Icon URL</span>
+            <input class="glass-input" type="text" id="iconInput" placeholder="https://example.com/icon.png">
           </div>
-          <div id="filePreview" class="file-preview"></div>
+          <div class="divider"><span>or upload</span></div>
+          <div class="field">
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile()">
+            <button class="glass-pill glass-pill-sm" onclick="document.getElementById('fileInput').click()" type="button">
+              📁 &nbsp;<span id="fileLabel">Choose Image</span>
+            </button>
+            <div class="fp" id="fp"></div>
+          </div>
         </div>
+
+        <div class="btn-row">
+          <button class="glass-pill" id="pubBtn" onclick="publishURL()">🚀&nbsp; Publish</button>
+        </div>
+
+        <div class="status" id="status"></div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn-primary" onclick="publishURL()" id="publishBtn">
-          Publish
-        </button>
-      </div>
+      <!-- List -->
+      <div id="listWrap"></div>
 
-      <div class="status-message" id="statusMessage"></div>
     </div>
-
-    <div id="urlsList"></div>
   </div>
 
   <script>
-    // API URL Configuration
-    const API_URL = 'https://app-launcher-u0x7.onrender.com'; // Your Render server URL
-    
-    console.log('Using API URL:', API_URL);
-    
-    let isPublishing = false;
-    let uploadedIconUrl = null;
+    const API = 'https://app-launcher-u0x7.onrender.com';
+    let busy = false, uploadedIcon = null;
 
-    // Toggle advanced section
-    function toggleAdvanced() {
-      const section = document.getElementById('advancedSection');
-      const toggle = document.querySelector('.advanced-toggle');
-      section.classList.toggle('show');
-      toggle.classList.toggle('active');
+    function toggleAdv() {
+      document.getElementById('advToggle').classList.toggle('open');
+      document.getElementById('advSection').classList.toggle('open');
     }
 
-    // Handle file selection
-    function handleFileSelect() {
-      const fileInput = document.getElementById('fileInput');
-      const file = fileInput.files[0];
-      
+    function handleFile() {
+      const file = document.getElementById('fileInput').files[0];
       if (!file) return;
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        showStatus('Please select an image file', true);
-        return;
-      }
-      
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        showStatus('File size must be less than 5MB', true);
-        return;
-      }
-      
-      // Show preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const preview = document.getElementById('filePreview');
-        const fileLabel = document.getElementById('fileLabel');
-        
-        preview.innerHTML = `
-          <img src="${e.target.result}" alt="Preview">
-          <div class="file-preview-info">
-            <div class="file-preview-name">${file.name}</div>
-            <div class="file-preview-size">${(file.size / 1024).toFixed(1)} KB</div>
-          </div>
-          <div class="file-remove" onclick="clearFile()">×</div>
-        `;
-        preview.classList.add('show');
-        fileLabel.textContent = 'Change Image';
+      if (!file.type.startsWith('image/')) { toast('Select an image file', true); return; }
+      if (file.size > 5e6) { toast('Image must be under 5MB', true); return; }
+      const r = new FileReader();
+      r.onload = e => {
+        document.getElementById('fileLabel').textContent = 'Change Image';
+        const fp = document.getElementById('fp');
+        fp.innerHTML = `<img src="${e.target.result}"><div class="fp-info"><div class="fp-name">${file.name}</div><div class="fp-size">${(file.size/1024).toFixed(1)} KB</div></div><span class="fp-rm" onclick="clearFile()">×</span>`;
+        fp.classList.add('show');
       };
-      reader.readAsDataURL(file);
-      
-      // Upload file
+      r.readAsDataURL(file);
       uploadFile(file);
     }
 
-    // Upload file to server
     async function uploadFile(file) {
-      const formData = new FormData();
-      formData.append('icon', file);
-      
+      const fd = new FormData(); fd.append('icon', file);
       try {
-        const response = await fetch(`${API_URL}/upload-icon`, {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to upload file');
-        }
-        
-        const data = await response.json();
-        uploadedIconUrl = data.iconUrl;
-        showStatus('✓ Image uploaded successfully');
-      } catch (error) {
-        showStatus('Failed to upload image', true);
-        clearFile();
-      }
+        const r = await fetch(`${API}/upload-icon`, { method:'POST', body:fd });
+        if (!r.ok) throw 0;
+        uploadedIcon = (await r.json()).iconUrl;
+        toast('✓ Image uploaded');
+      } catch { toast('Upload failed', true); clearFile(); }
     }
 
-    // Clear file selection
     function clearFile() {
       document.getElementById('fileInput').value = '';
-      document.getElementById('filePreview').classList.remove('show');
-      document.getElementById('fileLabel').textContent = 'Choose Image File';
-      uploadedIconUrl = null;
+      document.getElementById('fp').classList.remove('show');
+      document.getElementById('fileLabel').textContent = 'Choose Image';
+      uploadedIcon = null;
     }
 
-    // Format date
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleString();
+    function toast(msg, err=false) {
+      const el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = `status show ${err?'err':'ok'}`;
+      setTimeout(() => el.classList.remove('show'), 3200);
     }
 
-    // Show status message
-    function showStatus(message, isError = false) {
-      const statusEl = document.getElementById('statusMessage');
-      statusEl.textContent = message;
-      statusEl.className = `status-message show ${isError ? 'error' : 'success'}`;
-      
-      setTimeout(() => {
-        statusEl.classList.remove('show');
-      }, 3000);
-    }
+    const fmt = d => new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
-    // Fetch and display URLs
     async function fetchURLs() {
-      const listEl = document.getElementById('urlsList');
-      
+      const w = document.getElementById('listWrap');
       try {
-        const response = await fetch(`${API_URL}/urls`);
-        if (!response.ok) throw new Error('Failed to fetch URLs');
-        
-        const urls = await response.json();
-        
-        if (urls.length === 0) {
-          listEl.innerHTML = `
-            <div class="glass-card">
-              <div class="empty-state">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <p>No apps published yet</p>
-                <p class="empty-subtitle">Add your first URL above to get started</p>
-              </div>
-            </div>
-          `;
-        } else {
-          listEl.innerHTML = `
-            <div class="glass-card">
-              <div class="urls-list">
-                ${urls.map(item => `
-                  <div class="url-card">
-                    <img src="${item.favicon}" alt="${item.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'">
-                    <div class="url-info">
-                      <div class="url-title">${item.title}</div>
-                      <div class="url-link">${item.url}</div>
-                      <div class="url-date">Published ${formatDate(item.publishedAt)}</div>
-                    </div>
-                    <button class="btn-delete" onclick="deleteURL('${item.id}')">
-                      Unpublish
-                    </button>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-      } catch (error) {
-        listEl.innerHTML = `
-          <div class="glass-card">
-            <div class="empty-state">
-              <p style="color: #fca5a5;">⚠️ Unable to connect to server</p>
-              <p class="empty-subtitle">Make sure the server is running on port 3000</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    // Publish new URL
-    async function publishURL() {
-      if (isPublishing) return;
-      
-      const input = document.getElementById('urlInput');
-      const iconInput = document.getElementById('iconInput');
-      const btn = document.getElementById('publishBtn');
-      const url = input.value.trim();
-      const customIcon = iconInput.value.trim();
-      
-      if (!url) {
-        showStatus('Please enter a URL', true);
-        return;
-      }
-      
-      // Validate URL format
-      try {
-        new URL(url);
-      } catch {
-        showStatus('Please enter a valid URL (e.g., https://example.com)', true);
-        return;
-      }
-      
-      // Validate custom icon URL if provided
-      if (customIcon) {
-        try {
-          new URL(customIcon);
-        } catch {
-          showStatus('Please enter a valid icon URL', true);
+        const urls = await (await fetch(`${API}/urls`)).json();
+        if (!urls.length) {
+          w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">🌐</div><div class="empty-t">No apps published yet</div><div class="empty-s">Add your first URL above</div></div>`;
           return;
         }
+        w.innerHTML = `
+          <div class="list-header">
+            <span class="list-title">Published Apps</span>
+            <span class="count-badge">${urls.length}</span>
+          </div>
+          <div class="urls-list">
+            ${urls.map(u => `
+              <div class="glass-card url-card">
+                <div class="icon-wrap">
+                  <img src="${u.favicon}" alt="${u.title}"
+                    onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%228%22 fill=%22rgba(255,255,255,.1)%22/%3E%3Ctext x=%2220%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22%3E🌐%3C/text%3E%3C/svg%3E'">
+                </div>
+                <div class="url-info">
+                  <div class="url-title">${u.title}</div>
+                  <div class="url-link">${u.url}</div>
+                  <div class="url-date">${fmt(u.publishedAt)}</div>
+                </div>
+                <button class="btn-rm" onclick="deleteURL('${u.id}')">Remove</button>
+              </div>`).join('')}
+          </div>`;
+      } catch {
+        w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">⚠️</div><div class="empty-t">Can't reach server</div><div class="empty-s">Make sure the backend is running</div></div>`;
       }
-      
-      isPublishing = true;
-      btn.disabled = true;
-      btn.textContent = 'Publishing...';
-      
+    }
+
+    async function publishURL() {
+      if (busy) return;
+      const url = document.getElementById('urlInput').value.trim();
+      const icon = document.getElementById('iconInput').value.trim();
+      if (!url) { toast('Please enter a URL', true); return; }
+      try { new URL(url); } catch { toast('Enter a valid URL', true); return; }
+
+      busy = true;
+      const btn = document.getElementById('pubBtn');
+      btn.disabled = true; btn.innerHTML = '⏳&nbsp; Publishing…';
+
       try {
         const payload = { url };
-        
-        // Priority: uploaded file > custom URL > auto-fetch
-        if (uploadedIconUrl) {
-          payload.customIcon = uploadedIconUrl;
-        } else if (customIcon) {
-          payload.customIcon = customIcon;
-        }
-        
-        const response = await fetch(`${API_URL}/urls`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to publish URL');
-        }
-        
-        const newEntry = await response.json();
-        input.value = '';
-        iconInput.value = '';
+        if (uploadedIcon) payload.customIcon = uploadedIcon;
+        else if (icon) payload.customIcon = icon;
+        const res = await fetch(`${API}/urls`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        if (!res.ok) { const e = await res.json(); throw new Error(e.error||'Failed'); }
+        const entry = await res.json();
+        document.getElementById('urlInput').value = '';
+        document.getElementById('iconInput').value = '';
         clearFile();
-        showStatus(`✓ Published: ${newEntry.title}`);
+        toast(`✓ Published: ${entry.title}`);
         fetchURLs();
-      } catch (error) {
-        showStatus(error.message, true);
-      } finally {
-        isPublishing = false;
-        btn.disabled = false;
-        btn.textContent = 'Publish';
-      }
+      } catch(e) { toast(e.message, true); }
+      finally { busy=false; btn.disabled=false; btn.innerHTML='🚀&nbsp; Publish'; }
     }
 
-    // Delete URL
     async function deleteURL(id) {
       try {
-        const response = await fetch(`${API_URL}/urls/${id}`, {
-          method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete URL');
-        
-        showStatus('✓ URL unpublished');
+        if (!(await fetch(`${API}/urls/${id}`,{method:'DELETE'})).ok) throw 0;
+        toast('✓ Removed');
         fetchURLs();
-      } catch (error) {
-        showStatus('Failed to unpublish URL', true);
-      }
+      } catch { toast('Failed to remove', true); }
     }
 
-    // Initial load and auto-refresh
     fetchURLs();
     setInterval(fetchURLs, 5000);
   </script>

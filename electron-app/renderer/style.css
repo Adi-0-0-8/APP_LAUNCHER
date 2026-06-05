@@ -4,6 +4,12 @@
   box-sizing: border-box;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: transparent;
@@ -12,121 +18,87 @@ body {
   user-select: none;
 }
 
-/* Collapsed View - Floating Dot */
-.collapsed-view {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.floating-dot {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-  position: relative;
-  -webkit-app-region: drag;
-}
-
-.floating-dot:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
-}
-
-.floating-dot:active {
-  cursor: grabbing;
-}
-
-.dot-icon {
-  font-size: 22px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  -webkit-app-region: no-drag;
-  cursor: pointer;
-  z-index: 10;
-}
-
-.dot-count {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  background: #ef4444;
-  color: white;
-  font-size: 9px;
-  font-weight: bold;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
-  pointer-events: none;
-}
-
-/* Expanded View - Sidebar */
-.expanded-view {
-  width: 80px;
-  height: 600px;
-  background: #1a1a1a;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  animation: expandIn 0.3s ease-out;
-}
-
-.sidebar-container {
+/* Sidebar */
+.sidebar {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  transition: background 0.3s ease, border 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.sidebar-header {
-  padding: 10px;
-  display: flex;
-  justify-content: flex-end;
-  border-bottom: 1px solid #2a2a2a;
+.sidebar.collapsed {
+  width: 5px !important;
+  background: rgba(99, 102, 241, 0.8);
+  border-right: 1px solid rgba(99, 102, 241, 0.5);
+  box-shadow: none;
 }
 
+.sidebar.collapsed .close-btn,
+.sidebar.collapsed .loading,
+.sidebar.collapsed .empty-state,
+.sidebar.collapsed .error-state,
+.sidebar.collapsed .app-list {
+  display: none !important;
+  visibility: hidden;
+}
+
+/* Close button */
 .close-btn {
-  width: 24px;
-  height: 24px;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  display: flex;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
-  color: #808080;
+  font-size: 20px;
+  color: #ef4444;
   transition: all 0.2s;
-  -webkit-app-region: no-drag;
+  z-index: 1000;
+}
+
+.sidebar:not(.collapsed) .close-btn {
+  display: flex;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.8);
+  transform: translateX(-50%) scale(1.1);
   color: #fff;
-  transform: scale(1.1);
 }
 
+/* Loading, Empty, Error states */
 .loading,
 .empty-state,
 .error-state {
   flex: 1;
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #505050;
-  padding: 10px;
+  padding: 20px;
+}
+
+.sidebar:not(.collapsed) .loading,
+.sidebar:not(.collapsed) .empty-state,
+.sidebar:not(.collapsed) .error-state {
+  display: flex;
 }
 
 .empty-state svg,
@@ -140,9 +112,8 @@ body {
 
 .empty-state p,
 .error-state p {
-  font-size: 9px;
+  font-size: 10px;
   text-align: center;
-  line-height: 1.3;
 }
 
 .spinner {
@@ -154,13 +125,18 @@ body {
   animation: spin 1s linear infinite;
 }
 
+/* App list */
 .app-list {
   flex: 1;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 0;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 50px 0 10px 0;
+}
+
+.sidebar:not(.collapsed) .app-list {
+  display: flex;
 }
 
 .app-list::-webkit-scrollbar {
@@ -180,22 +156,22 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* App item */
 .app-item {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 0;
+  padding: 12px 0;
   cursor: pointer;
   transition: all 0.2s;
   border-left: 3px solid transparent;
   position: relative;
   animation: fadeIn 0.3s;
-  -webkit-app-region: no-drag;
 }
 
 .app-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(99, 102, 241, 0.2);
   border-left-color: #6366f1;
 }
 
@@ -217,32 +193,27 @@ body {
 }
 
 .app-item:active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.3);
   transform: scale(0.95);
 }
 
 .app-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.05);
-  padding: 6px;
+  padding: 4px;
   transition: transform 0.2s;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  image-rendering: pixelated;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-item:hover .app-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
+/* Animations */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -255,17 +226,6 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes expandIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 

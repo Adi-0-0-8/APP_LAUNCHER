@@ -6,6 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openURL: (url) => ipcRenderer.invoke('open-url', url),
   expandWindow: () => ipcRenderer.send('expand-window'),
   collapseWindow: () => ipcRenderer.send('collapse-window'),
-  resetPosition: () => ipcRenderer.send('reset-position'),
+  quitApp: () => ipcRenderer.send('quit-app'),
   onServerUrl: (callback) => ipcRenderer.on('server-url', (event, url) => callback(url))
 });
