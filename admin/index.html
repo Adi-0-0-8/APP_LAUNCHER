@@ -382,13 +382,12 @@
         btn.style.background = 'linear-gradient(155deg, rgba(74,222,128,0.45) 0%, rgba(74,222,128,0.18) 50%, rgba(74,222,128,0.30) 100%)';
         btn.style.borderColor = 'rgba(74,222,128,0.50)';
         btn.style.boxShadow = '0 1.5px 0 rgba(255,255,255,0.65) inset, 0 10px 40px rgba(74,222,128,0.30)';
+        
+        console.log('Login successful, redirecting to admin.html...');
+        
         setTimeout(() => {
-          // Try multiple redirect methods
-          try {
-            window.location.href = '/admin.html';
-          } catch (e) {
-            window.location.assign('/admin.html');
-          }
+          console.log('Attempting redirect now...');
+          window.location.href = './admin.html';
         }, 600);
       } else {
         // Wrong creds
