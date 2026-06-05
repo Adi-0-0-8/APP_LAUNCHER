@@ -3,27 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App Launcher</title>
+  <title>Login — App Launcher</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
-    /* ══════════════════════════════════════
-       DARK SCENE with vivid colour orbs
-       — this is what the glass refracts
-       ══════════════════════════════════════ */
-    body {
-      background: #0c0c14;
-      position: relative;
-      min-height: 100vh;
-    }
+    body { background: #0c0c14; position: relative; min-height: 100vh; }
 
-    /* Fixed gradient layer */
+    /* ── Same gradient scene as launcher ── */
     .bg {
       position: fixed; inset: 0; z-index: 0;
       background:
@@ -35,7 +27,6 @@
         #0c0c14;
     }
 
-    /* Animated soft orbs floating */
     .orb {
       position: fixed; border-radius: 50%;
       filter: blur(72px); pointer-events: none; z-index: 0;
@@ -53,151 +44,19 @@
     @keyframes f4 { 0%,100%{transform:translate(0,0) scale(1)}   45%{transform:translate(-45px,50px) scale(1.07)} }
     @keyframes f5 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(30px,-35px) scale(1.09)} }
 
-    /* ══════════════════════════════════════
-       LIQUID GLASS MATERIAL
-       Clear glass — colour comes from behind
-       ══════════════════════════════════════ */
-
-    /* Card glass */
-    .glass-card {
-      position: relative;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
-      -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
-      border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.20);
-      box-shadow:
-        0 1.5px 0 rgba(255,255,255,0.55) inset,  /* top specular rim */
-        0 -1px  0 rgba(255,255,255,0.10) inset,  /* bottom rim */
-        0 20px 60px rgba(0,0,0,0.40),
-        0  4px 16px rgba(0,0,0,0.25);
-      overflow: hidden;
-      transition: border-color .35s ease, box-shadow .35s ease, transform .4s cubic-bezier(.34,1.46,.64,1);
-    }
-    /* Top-left specular flash */
-    .glass-card::before {
-      content: '';
-      position: absolute; inset: 0; border-radius: inherit; z-index: 1; pointer-events: none;
-      background: linear-gradient(
-        148deg,
-        rgba(255,255,255,0.55) 0%,
-        rgba(255,255,255,0.18) 14%,
-        rgba(255,255,255,0.02) 35%,
-        transparent 55%
-      );
-    }
-    /* Bottom-edge refraction bounce */
-    .glass-card::after {
-      content: '';
-      position: absolute; inset: 0; border-radius: inherit; z-index: 1; pointer-events: none;
-      background: linear-gradient(to bottom, transparent 65%, rgba(255,255,255,0.06) 82%, rgba(255,255,255,0.18) 100%);
-    }
-    .glass-card > * { position: relative; z-index: 2; }
-    .glass-card:hover {
-      border-color: rgba(255,255,255,0.32);
-      box-shadow:
-        0 1.5px 0 rgba(255,255,255,0.65) inset,
-        0 -1px  0 rgba(255,255,255,0.14) inset,
-        0 28px 80px rgba(0,0,0,0.50),
-        0  6px 24px rgba(0,0,0,0.30);
-      transform: translateY(-3px);
+    /* ── Page layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
     }
 
-    /* ══════ PILL BUTTON — the iconic Apple glass pill ══════ */
-    .glass-pill {
-      position: relative;
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 15px 32px;
-      border-radius: 50px;
-      border: 1px solid rgba(255,255,255,0.28);
-      cursor: pointer; outline: none;
-      font-family: inherit; font-size: 15px; font-weight: 600;
-      color: rgba(255,255,255,0.92);
-      letter-spacing: -.2px;
-      overflow: hidden;
-      /* The glass lens gradient */
-      background: linear-gradient(
-        155deg,
-        rgba(255,255,255,0.38) 0%,
-        rgba(255,255,255,0.16) 22%,
-        rgba(255,255,255,0.06) 50%,
-        rgba(255,255,255,0.04) 68%,
-        rgba(255,255,255,0.12) 85%,
-        rgba(255,255,255,0.22) 100%
-      );
-      backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
-      -webkit-backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
-      box-shadow:
-        0 1.5px 0 rgba(255,255,255,0.65) inset,  /* sharp top highlight */
-        0 -1px  0 rgba(255,255,255,0.18) inset,
-        1px  0  0 rgba(255,255,255,0.16) inset,
-        -1px 0  0 rgba(255,255,255,0.16) inset,
-        0 10px 30px rgba(0,0,0,0.40),
-        0  3px  8px rgba(0,0,0,0.28);
-      transition: all .3s cubic-bezier(.34,1.46,.64,1);
-    }
-    /* Top-half gloss overlay */
-    .glass-pill::after {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 46%;
-      border-radius: 50px 50px 0 0;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.30) 0%, transparent 100%);
-      pointer-events: none;
-    }
-    .glass-pill:hover:not(:disabled) {
-      border-color: rgba(255,255,255,0.42);
-      box-shadow:
-        0 1.5px 0 rgba(255,255,255,0.80) inset,
-        0 -1px  0 rgba(255,255,255,0.22) inset,
-        1px  0  0 rgba(255,255,255,0.22) inset,
-        -1px 0  0 rgba(255,255,255,0.22) inset,
-        0 18px 50px rgba(0,0,0,0.55),
-        0  5px 16px rgba(0,0,0,0.35);
-      transform: translateY(-2px) scale(1.015);
-    }
-    .glass-pill:active:not(:disabled) {
-      transform: scale(.98);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.50) inset, 0 6px 18px rgba(0,0,0,0.35);
-    }
-    .glass-pill:disabled { opacity: .45; cursor: not-allowed; }
-
-    /* ══════ GLASS INPUT ══════ */
-    .glass-input {
-      width: 100%;
-      padding: 15px 18px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(30px) saturate(2);
-      -webkit-backdrop-filter: blur(30px) saturate(2);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.90);
-      font-family: inherit; font-size: 16px;
-      outline: none;
-      transition: all .25s ease;
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.28) inset,
-        0 4px 14px rgba(0,0,0,0.18);
-    }
-    .glass-input::placeholder { color: rgba(255,255,255,0.32); }
-    .glass-input:focus {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.35);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.40) inset,
-        0 6px 24px rgba(0,0,0,0.28),
-        0 0 0 3px rgba(255,255,255,0.06);
-    }
-
-    /* ══════ LAYOUT ══════ */
-    .page { position: relative; z-index: 1; min-height: 100vh; padding: 64px 20px 80px; }
-    .container { max-width: 640px; margin: 0 auto; }
-
-    /* ══════ HEADER ══════ */
-    .header { text-align: center; margin-bottom: 48px; }
-
+    /* ── Badge ── */
     .badge {
       display: inline-flex; align-items: center; gap: 7px;
-      padding: 7px 20px; border-radius: 50px; margin-bottom: 22px;
+      padding: 7px 20px; border-radius: 50px; margin-bottom: 28px;
       background: rgba(255,255,255,0.10);
       backdrop-filter: blur(24px) saturate(2);
       -webkit-backdrop-filter: blur(24px) saturate(2);
@@ -213,146 +72,203 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.30) 0%, transparent 45%);
     }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; flex-shrink: 0; position: relative; z-index: 1; }
+    .badge span { position: relative; z-index: 1; }
 
-    .header h1 {
-      font-size: clamp(2.4rem, 7vw, 3.8rem);
-      font-weight: 700;
-      color: rgba(255,255,255,0.94);
-      letter-spacing: -2px; line-height: 1.08;
-      text-shadow: 0 2px 40px rgba(124,58,237,0.4);
+    /* ── Login card ── */
+    .card {
+      width: 100%; max-width: 420px;
+      position: relative;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
+      -webkit-backdrop-filter: blur(40px) saturate(2.2) brightness(1.1);
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.20);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.55) inset,
+        0 -1px  0 rgba(255,255,255,0.10) inset,
+        0 20px 60px rgba(0,0,0,0.40),
+        0  4px 16px rgba(0,0,0,0.25);
+      overflow: hidden;
+      padding: 40px 36px 36px;
+      animation: popIn .6s cubic-bezier(.34,1.46,.64,1);
     }
-    .header p { margin-top: 12px; font-size: 16px; color: rgba(255,255,255,0.45); font-weight: 400; }
+    .card::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none;
+      background: linear-gradient(148deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 14%, rgba(255,255,255,0.02) 35%, transparent 55%);
+    }
+    .card::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none;
+      background: linear-gradient(to bottom, transparent 65%, rgba(255,255,255,0.06) 82%, rgba(255,255,255,0.18) 100%);
+    }
+    .card > * { position: relative; z-index: 1; }
 
-    /* ══════ FORM CARD ══════ */
-    .publish-card { padding: 34px 34px 28px; margin-bottom: 28px; }
+    /* ── Card header ── */
+    .card-icon {
+      width: 64px; height: 64px;
+      margin: 0 auto 20px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 1.5px 0 rgba(255,255,255,0.50) inset, 0 8px 24px rgba(0,0,0,0.30);
+      position: relative; overflow: hidden;
+    }
+    .card-icon::before {
+      content: ''; position: absolute; inset: 0; border-radius: 20px;
+      background: linear-gradient(140deg, rgba(255,255,255,0.45) 0%, transparent 55%);
+    }
+
+    .card-title {
+      text-align: center;
+      font-size: 1.75rem; font-weight: 700;
+      color: rgba(255,255,255,0.94);
+      letter-spacing: -1px; margin-bottom: 6px;
+    }
+    .card-sub {
+      text-align: center;
+      font-size: 14px; color: rgba(255,255,255,0.42);
+      margin-bottom: 32px;
+    }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 14px; }
 
     .field-label {
       display: block; font-size: 11px; font-weight: 700;
       letter-spacing: .7px; text-transform: uppercase;
-      color: rgba(255,255,255,0.38); margin-bottom: 9px;
-    }
-    .field { margin-bottom: 14px; }
-
-    /* ══════ ADVANCED TOGGLE ══════ */
-    .adv-toggle {
-      display: flex; align-items: center; gap: 7px;
-      color: rgba(255,255,255,0.40); font-size: 14px; font-weight: 500;
-      cursor: pointer; user-select: none; width: fit-content;
-      margin-top: 4px; transition: color .2s;
-    }
-    .adv-toggle:hover { color: rgba(255,255,255,0.65); }
-    .chevron { width: 14px; height: 14px; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .adv-toggle.open .chevron { transform: rotate(90deg); }
-
-    .adv-section { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
-    .adv-section.open { max-height: 420px; margin-top: 16px; }
-
-    .divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.09); }
-    .divider span { font-size: 11px; color: rgba(255,255,255,0.28); font-weight: 600; letter-spacing: .4px; }
-
-    /* ══════ BUTTON ROW ══════ */
-    .btn-row { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
-    .btn-row .glass-pill { flex: 1; }
-
-    /* Ghost variant for upload */
-    .glass-pill-sm {
-      width: 100%; padding: 13px 20px; border-radius: 16px;
-      font-size: 14px; color: rgba(255,255,255,0.65);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.12);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 12px rgba(0,0,0,0.20);
-    }
-    .glass-pill-sm:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.20); }
-
-    /* ══════ STATUS ══════ */
-    .status { margin-top: 14px; padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; display: none; animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
-    .status.show { display: block; }
-    .status.ok  { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.28); color: #86efac; backdrop-filter: blur(20px); }
-    .status.err { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.28); color: #fca5a5; backdrop-filter: blur(20px); }
-
-    /* ══════ FILE PREVIEW ══════ */
-    .fp { display: none; align-items: center; gap: 12px; margin-top: 10px; padding: 11px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); }
-    .fp.show { display: flex; }
-    .fp img { width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
-    .fp-info { flex: 1; }
-    .fp-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.78); margin-bottom: 1px; }
-    .fp-size { font-size: 11px; color: rgba(255,255,255,0.38); }
-    .fp-rm { color: rgba(255,255,255,0.28); cursor: pointer; font-size: 20px; padding: 4px 6px; border-radius: 6px; transition: color .2s; }
-    .fp-rm:hover { color: #f87171; }
-
-    /* ══════ URL CARD LIST ══════ */
-    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 4px; }
-    .list-title { font-size: 11px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: rgba(255,255,255,0.35); }
-    .count-badge {
-      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.50);
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
-      backdrop-filter: blur(16px); padding: 2px 10px; border-radius: 50px;
+      color: rgba(255,255,255,0.38); margin-bottom: 8px;
     }
 
-    .urls-list { display: flex; flex-direction: column; gap: 10px; }
+    /* Input wrapper for icon */
+    .input-wrap { position: relative; }
 
-    .url-card { padding: 18px 22px; display: flex; align-items: center; gap: 16px; animation: pop .45s cubic-bezier(.34,1.56,.64,1); }
-
-    /* Icon pill */
-    .icon-wrap { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
-    .icon-wrap::before {
-      content: ''; position: absolute; inset: 0; border-radius: 14px;
-      background: linear-gradient(140deg, rgba(255,255,255,0.55) 0%, transparent 55%);
-      z-index: 2; pointer-events: none;
+    .input-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      font-size: 16px; opacity: .45; pointer-events: none;
     }
-    .icon-wrap img {
-      width: 50px; height: 50px; border-radius: 14px;
-      object-fit: contain; padding: 9px;
-      background: rgba(255,255,255,0.09);
+
+    .glass-input {
+      width: 100%;
+      padding: 15px 18px 15px 44px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(30px) saturate(2);
+      -webkit-backdrop-filter: blur(30px) saturate(2);
       border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(20px); display: block;
+      color: rgba(255,255,255,0.90);
+      font-family: inherit; font-size: 15px;
+      outline: none;
+      transition: all .25s ease;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset, 0 4px 14px rgba(0,0,0,0.18);
+    }
+    .glass-input::placeholder { color: rgba(255,255,255,0.28); }
+    .glass-input:focus {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.35);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.40) inset, 0 6px 24px rgba(0,0,0,0.28), 0 0 0 3px rgba(255,255,255,0.06);
+    }
+    .glass-input.err {
+      border-color: rgba(248,113,113,0.55);
+      background: rgba(248,113,113,0.08);
     }
 
-    .url-info { flex: 1; min-width: 0; }
-    .url-title { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-    .url-link  { font-size: 13px; color: rgba(255,255,255,0.40); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-    .url-date  { font-size: 11px; color: rgba(255,255,255,0.26); }
-
-    .btn-rm {
-      flex-shrink: 0; padding: 8px 18px; border-radius: 50px;
-      border: 1.5px solid rgba(0,0,0,0.18); cursor: pointer;
-      font-family: inherit; font-size: 13px; font-weight: 700;
-      color: rgba(255,255,255,0.95);
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(20px) saturate(1.5);
-      -webkit-backdrop-filter: blur(20px) saturate(1.5);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 4px 12px rgba(0,0,0,0.35);
-      transition: all .22s cubic-bezier(.34,1.46,.64,1);
-      letter-spacing: .1px;
+    /* Password toggle */
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 16px; opacity: .45; transition: opacity .2s; padding: 4px;
     }
-    .btn-rm:hover {
-      background: rgba(220,50,50,0.80);
-      border-color: rgba(255,100,100,0.40);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 18px rgba(180,0,0,0.40);
-      transform: scale(1.05);
+    .pw-toggle:hover { opacity: .80; }
+
+    /* ── Error message ── */
+    .error-msg {
+      display: none; align-items: center; gap: 8px;
+      margin-top: 14px; padding: 12px 16px; border-radius: 14px;
+      background: rgba(248,113,113,0.12);
+      border: 1px solid rgba(248,113,113,0.28);
+      color: #fca5a5; font-size: 13px; font-weight: 500;
+      backdrop-filter: blur(20px);
+      animation: shake .4s cubic-bezier(.36,.07,.19,.97);
+    }
+    .error-msg.show { display: flex; }
+
+    /* ── Login button ── */
+    .login-btn {
+      width: 100%; margin-top: 22px;
+      padding: 16px 28px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.28);
+      cursor: pointer; outline: none;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: -.1px;
+      overflow: hidden; position: relative;
+      background: linear-gradient(
+        155deg,
+        rgba(255,255,255,0.38) 0%,
+        rgba(255,255,255,0.16) 22%,
+        rgba(255,255,255,0.06) 50%,
+        rgba(255,255,255,0.04) 68%,
+        rgba(255,255,255,0.12) 85%,
+        rgba(255,255,255,0.22) 100%
+      );
+      backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
+      -webkit-backdrop-filter: blur(36px) saturate(2.4) brightness(1.15);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.65) inset,
+        0 -1px  0 rgba(255,255,255,0.18) inset,
+        0 10px 30px rgba(0,0,0,0.40),
+        0  3px  8px rgba(0,0,0,0.28);
+      transition: all .3s cubic-bezier(.34,1.46,.64,1);
+    }
+    .login-btn::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 46%;
+      border-radius: 50px 50px 0 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.28) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .login-btn:hover:not(:disabled) {
+      border-color: rgba(255,255,255,0.42);
+      box-shadow:
+        0 1.5px 0 rgba(255,255,255,0.80) inset,
+        0 -1px  0 rgba(255,255,255,0.22) inset,
+        0 18px 50px rgba(0,0,0,0.55),
+        0  5px 16px rgba(0,0,0,0.35);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .login-btn:active:not(:disabled) { transform: scale(.98); }
+    .login-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    /* Loading spinner inside button */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: rgba(255,255,255,0.90);
+      border-radius: 50%; vertical-align: middle; margin-right: 8px;
+      animation: spin .7s linear infinite;
     }
 
-    /* ══════ EMPTY STATE ══════ */
-    .empty { padding: 56px 20px; text-align: center; }
-    .empty-icon {
-      width: 68px; height: 68px; margin: 0 auto 18px;
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.40) inset; position: relative; overflow: hidden;
+    /* ── Footer hint ── */
+    .hint {
+      text-align: center; margin-top: 22px;
+      font-size: 12px; color: rgba(255,255,255,0.25);
     }
-    .empty-icon::before { content: ''; position: absolute; inset: 0; border-radius: 20px; background: linear-gradient(140deg, rgba(255,255,255,0.40) 0%, transparent 50%); }
-    .empty-t { font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 5px; }
-    .empty-s { font-size: 13px; color: rgba(255,255,255,0.32); }
 
-    @keyframes pop { from{opacity:0;transform:translateY(10px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+    /* ── Animations ── */
+    @keyframes popIn { from{opacity:0;transform:translateY(24px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes spin  { to{ transform: rotate(360deg); } }
+    @keyframes shake {
+      10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+      30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)}
+    }
 
-    @media(max-width:600px){
-      .publish-card{padding:22px 18px;}
-      .url-card{padding:14px 16px;}
-      .header h1{letter-spacing:-1.5px;}
+    @media(max-width:480px){
+      .card{ padding: 32px 22px 28px; }
     }
   </style>
 </head>
@@ -366,180 +282,124 @@
   <div class="orb o5"></div>
 
   <div class="page">
-    <div class="container">
 
-      <!-- Header -->
-      <div class="header">
-        <div class="badge">
-          <span class="badge-dot"></span>
-          <span style="position:relative;z-index:1">Liquid Glass UI</span>
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span>App Launcher</span>
+    </div>
+
+    <div class="card">
+
+      <div class="card-icon">🚀</div>
+      <div class="card-title">Welcome back</div>
+      <div class="card-sub">Sign in to manage your apps</div>
+
+      <div class="field">
+        <label class="field-label" for="username">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="glass-input" type="text" id="username" placeholder="Enter username" autocomplete="username" onkeypress="if(event.key==='Enter') tryLogin()">
         </div>
-        <h1>App Launcher</h1>
-        <p>Publish and manage your web apps</p>
       </div>
 
-      <!-- Publish card -->
-      <div class="glass-card publish-card">
-        <div class="field">
-          <span class="field-label">Website URL</span>
-          <input class="glass-input" type="text" id="urlInput" placeholder="https://youtube.com"
-            onkeypress="if(event.key==='Enter') publishURL()">
+      <div class="field">
+        <label class="field-label" for="password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="glass-input" type="password" id="password" placeholder="Enter password" autocomplete="current-password" onkeypress="if(event.key==='Enter') tryLogin()">
+          <button class="pw-toggle" type="button" onclick="togglePw()" id="pwToggle" title="Show/hide password">👁️</button>
         </div>
-
-        <div class="adv-toggle" id="advToggle" onclick="toggleAdv()">
-          <svg class="chevron" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="4,2 10,7 4,12"/></svg>
-          Advanced Options
-        </div>
-
-        <div class="adv-section" id="advSection">
-          <div class="field" style="margin-top:14px">
-            <span class="field-label">Custom Icon URL</span>
-            <input class="glass-input" type="text" id="iconInput" placeholder="https://example.com/icon.png">
-          </div>
-          <div class="divider"><span>or upload</span></div>
-          <div class="field">
-            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile()">
-            <button class="glass-pill glass-pill-sm" onclick="document.getElementById('fileInput').click()" type="button">
-              📁 &nbsp;<span id="fileLabel">Choose Image</span>
-            </button>
-            <div class="fp" id="fp"></div>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="glass-pill" id="pubBtn" onclick="publishURL()">🚀&nbsp; Publish</button>
-        </div>
-
-        <div class="status" id="status"></div>
       </div>
 
-      <!-- List -->
-      <div id="listWrap"></div>
+      <div class="error-msg" id="errMsg">
+        ⚠️ <span id="errText">Invalid username or password</span>
+      </div>
+
+      <button class="login-btn" id="loginBtn" onclick="tryLogin()">
+        <span id="btnContent">Sign In</span>
+      </button>
+
+      <div class="hint">Hint: haha It's Secure</div>
 
     </div>
+
   </div>
 
   <script>
-    const API = 'https://app-launcher-u0x7.onrender.com';
-    let busy = false, uploadedIcon = null;
-
-    function toggleAdv() {
-      document.getElementById('advToggle').classList.toggle('open');
-      document.getElementById('advSection').classList.toggle('open');
-    }
-
-    function handleFile() {
-      const file = document.getElementById('fileInput').files[0];
-      if (!file) return;
-      if (!file.type.startsWith('image/')) { toast('Select an image file', true); return; }
-      if (file.size > 5e6) { toast('Image must be under 5MB', true); return; }
-      const r = new FileReader();
-      r.onload = e => {
-        document.getElementById('fileLabel').textContent = 'Change Image';
-        const fp = document.getElementById('fp');
-        fp.innerHTML = `<img src="${e.target.result}"><div class="fp-info"><div class="fp-name">${file.name}</div><div class="fp-size">${(file.size/1024).toFixed(1)} KB</div></div><span class="fp-rm" onclick="clearFile()">×</span>`;
-        fp.classList.add('show');
-      };
-      r.readAsDataURL(file);
-      uploadFile(file);
-    }
-
-    async function uploadFile(file) {
-      const fd = new FormData(); fd.append('icon', file);
-      try {
-        const r = await fetch(`${API}/upload-icon`, { method:'POST', body:fd });
-        if (!r.ok) throw 0;
-        uploadedIcon = (await r.json()).iconUrl;
-        toast('✓ Image uploaded');
-      } catch { toast('Upload failed', true); clearFile(); }
-    }
-
-    function clearFile() {
-      document.getElementById('fileInput').value = '';
-      document.getElementById('fp').classList.remove('show');
-      document.getElementById('fileLabel').textContent = 'Choose Image';
-      uploadedIcon = null;
-    }
-
-    function toast(msg, err=false) {
-      const el = document.getElementById('status');
-      el.textContent = msg;
-      el.className = `status show ${err?'err':'ok'}`;
-      setTimeout(() => el.classList.remove('show'), 3200);
-    }
-
-    const fmt = d => new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-
-    async function fetchURLs() {
-      const w = document.getElementById('listWrap');
-      try {
-        const urls = await (await fetch(`${API}/urls`)).json();
-        if (!urls.length) {
-          w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">🌐</div><div class="empty-t">No apps published yet</div><div class="empty-s">Add your first URL above</div></div>`;
-          return;
-        }
-        w.innerHTML = `
-          <div class="list-header">
-            <span class="list-title">Published Apps</span>
-            <span class="count-badge">${urls.length}</span>
-          </div>
-          <div class="urls-list">
-            ${urls.map(u => `
-              <div class="glass-card url-card">
-                <div class="icon-wrap">
-                  <img src="${u.favicon}" alt="${u.title}"
-                    onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%228%22 fill=%22rgba(255,255,255,.1)%22/%3E%3Ctext x=%2220%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22%3E🌐%3C/text%3E%3C/svg%3E'">
-                </div>
-                <div class="url-info">
-                  <div class="url-title">${u.title}</div>
-                  <div class="url-link">${u.url}</div>
-                  <div class="url-date">${fmt(u.publishedAt)}</div>
-                </div>
-                <button class="btn-rm" onclick="deleteURL('${u.id}')">Remove</button>
-              </div>`).join('')}
-          </div>`;
-      } catch {
-        w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">⚠️</div><div class="empty-t">Can't reach server</div><div class="empty-s">Make sure the backend is running</div></div>`;
+    function togglePw() {
+      const inp = document.getElementById('password');
+      const btn = document.getElementById('pwToggle');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁️';
       }
     }
 
-    async function publishURL() {
-      if (busy) return;
-      const url = document.getElementById('urlInput').value.trim();
-      const icon = document.getElementById('iconInput').value.trim();
-      if (!url) { toast('Please enter a URL', true); return; }
-      try { new URL(url); } catch { toast('Enter a valid URL', true); return; }
-
-      busy = true;
-      const btn = document.getElementById('pubBtn');
-      btn.disabled = true; btn.innerHTML = '⏳&nbsp; Publishing…';
-
-      try {
-        const payload = { url };
-        if (uploadedIcon) payload.customIcon = uploadedIcon;
-        else if (icon) payload.customIcon = icon;
-        const res = await fetch(`${API}/urls`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-        if (!res.ok) { const e = await res.json(); throw new Error(e.error||'Failed'); }
-        const entry = await res.json();
-        document.getElementById('urlInput').value = '';
-        document.getElementById('iconInput').value = '';
-        clearFile();
-        toast(`✓ Published: ${entry.title}`);
-        fetchURLs();
-      } catch(e) { toast(e.message, true); }
-      finally { busy=false; btn.disabled=false; btn.innerHTML='🚀&nbsp; Publish'; }
+    function showError(msg) {
+      const el = document.getElementById('errMsg');
+      document.getElementById('errText').textContent = msg;
+      el.classList.add('show');
+      document.getElementById('username').classList.add('err');
+      document.getElementById('password').classList.add('err');
+      // re-trigger shake animation
+      el.style.animation = 'none';
+      el.offsetHeight; // reflow
+      el.style.animation = '';
     }
 
-    async function deleteURL(id) {
-      try {
-        if (!(await fetch(`${API}/urls/${id}`,{method:'DELETE'})).ok) throw 0;
-        toast('✓ Removed');
-        fetchURLs();
-      } catch { toast('Failed to remove', true); }
+    function clearError() {
+      document.getElementById('errMsg').classList.remove('show');
+      document.getElementById('username').classList.remove('err');
+      document.getElementById('password').classList.remove('err');
     }
 
-    fetchURLs();
-    setInterval(fetchURLs, 5000);
+    async function tryLogin() {
+      const btn = document.getElementById('loginBtn');
+      const content = document.getElementById('btnContent');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      clearError();
+
+      if (!username || !password) {
+        showError('Please fill in both fields');
+        return;
+      }
+
+      // Show loading state
+      btn.disabled = true;
+      content.innerHTML = '<span class="spinner"></span>Signing in…';
+
+      // Simulate a tiny delay for realism
+      await new Promise(r => setTimeout(r, 800));
+
+      if (username === 'Admin' && password === 'Admin@123') {
+        // Success — flash green then redirect
+        content.innerHTML = '✓ Success!';
+        btn.style.background = 'linear-gradient(155deg, rgba(74,222,128,0.45) 0%, rgba(74,222,128,0.18) 50%, rgba(74,222,128,0.30) 100%)';
+        btn.style.borderColor = 'rgba(74,222,128,0.50)';
+        btn.style.boxShadow = '0 1.5px 0 rgba(255,255,255,0.65) inset, 0 10px 40px rgba(74,222,128,0.30)';
+        setTimeout(() => {
+          window.location.href = 'admin.html';
+        }, 600);
+      } else {
+        // Wrong creds
+        btn.disabled = false;
+        content.innerHTML = 'Sign In';
+        if (username !== 'Admin') {
+          showError('Username not found');
+        } else {
+          showError('Incorrect password');
+        }
+      }
+    }
+
+    // Auto-focus username
+    document.getElementById('username').focus();
   </script>
+
 </body>
 </html>
