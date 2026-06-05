@@ -43,7 +43,16 @@ const upload = multer({
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://app-launcher-u0x7.onrender.com',
+    /\.vercel\.app$/, // Allow all Vercel deployments
+    /localhost:\d+$/  // Allow all localhost ports
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve uploaded files
