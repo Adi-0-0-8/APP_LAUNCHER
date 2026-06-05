@@ -7,6 +7,12 @@ dist/
 build/
 out/
 
+# Uploads
+server/uploads/
+
+# Environment variables (keep .env for now, but be careful with sensitive data)
+# .env
+
 # OS
 .DS_Store
 Thumbs.db
@@ -21,6 +27,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Environment
-.env
-.env.local
+# Data
+server/urls.json
+electron-app/config.json

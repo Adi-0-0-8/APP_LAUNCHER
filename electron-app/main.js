@@ -3,26 +3,20 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+require('dotenv').config(); // Load .env file
 
 let mainWindow;
 let isExpanded = false;
 let lastCollapsedPosition = { x: 100, y: 100 };
 const CONFIG_FILE = path.join(app.getPath('userData'), 'config.json');
 
-// Load environment variables (if .env exists)
-let SERVER_URL = 'http://localhost:3000'; // Default
-try {
-  const envPath = path.join(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const match = envContent.match(/SERVER_URL=(.+)/);
-    if (match) {
-      SERVER_URL = match[1].trim();
-    }
-  }
-} catch (error) {
-  console.error('Could not load .env:', error);
-}
+// Get server URL from environment variable or use default
+const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3000';
+
+console.log('===========================================');
+console.log('🚀 Starting Electron App');
+console.log('📡 Server URL:', SERVER_URL);
+console.log('===========================================');
 
 // Load or create configuration
 function loadConfig() {
@@ -57,7 +51,7 @@ function saveConfig(config) {
 const config = loadConfig();
 lastCollapsedPosition = config.position || { x: 100, y: 100 };
 
-console.log('Using server URL:', config.serverUrl);
+console.log('✅ Using server URL:', config.serverUrl);
 
 // Save position
 function saveWindowPosition() {
