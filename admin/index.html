@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Launcher Admin Panel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0a0a0a;
+      min-height: 100vh;
+      padding: 40px 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated background lights */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      animation: float 25s infinite ease-in-out;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      width: 800px;
+      height: 800px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      top: -300px;
+      left: -300px;
+      animation-delay: 0s;
+    }
+
+    body::after {
+      width: 700px;
+      height: 700px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      bottom: -250px;
+      right: -250px;
+      animation-delay: 7s;
+    }
+
+    /* Additional light effect */
+    .light-effect {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse 15s infinite ease-in-out;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(150px, -100px) scale(1.15); }
+      66% { transform: translate(-100px, 150px) scale(0.85); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.15; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 50px;
+      color: #fff;
+      font-size: 3rem;
+      font-weight: 700;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      letter-spacing: -1px;
+    }
+
+    /* Glass card effect */
+    .glass-card {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5),
+                  0 0 40px rgba(99, 102, 241, 0.1),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .input-container {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: rgba(30, 30, 30, 0.8);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1),
+                  0 0 30px rgba(99, 102, 241, 0.2);
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      flex: 1;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4),
+                  0 0 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6),
+                  0 0 60px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: rgba(30, 30, 30, 0.6);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(40, 40, 40, 0.8);
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      margin-top: 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .advanced-toggle:hover {
+      color: #fff;
+    }
+
+    .advanced-icon {
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .advanced-toggle.active .advanced-icon {
+      transform: rotate(90deg);
+    }
+
+    .advanced-section {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .advanced-section.show {
+      max-height: 500px;
+      margin-top: 20px;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider span {
+      background: rgba(20, 20, 20, 0.8);
+      padding: 0 16px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+    }
+
+    .file-upload-wrapper {
+      width: 100%;
+    }
+
+    .file-upload-wrapper .btn-secondary {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .upload-icon {
+      font-size: 20px;
+    }
+
+    .file-preview {
+      margin-top: 12px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+    }
+
+    .file-preview.show {
+      display: flex;
+    }
+
+    .file-preview img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .file-preview-info {
+      flex: 1;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .file-preview-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .file-preview-size {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .file-remove {
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .file-remove:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .status-message {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      display: none;
+      animation: slideIn 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: #86efac;
+    }
+
+    .urls-list {
+      display: grid;
+      gap: 20px;
+    }
+
+    .url-card {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s;
+      animation: fadeIn 0.4s;
+    }
+
+    .url-card:hover {
+      background: rgba(30, 30, 30, 0.8);
+      transform: translateX(8px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  0 0 40px rgba(99, 102, 241, 0.15);
+    }
+
+    .url-card img {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: rgba(30, 30, 30, 0.8);
+      padding: 10px;
+      object-fit: contain;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .url-info {
+      flex: 1;
+    }
+
+    .url-title {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .url-link {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      word-break: break-all;
+      margin-bottom: 4px;
+    }
+
+    .url-date {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: white;
+      padding: 10px 24px;
+      font-size: 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-delete:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.4;
+      stroke: currentColor;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .empty-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .glass-card {
+        padding: 24px;
+      }
+
+      .url-card {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="light-effect"></div>
+  <div class="container">
+    <h1>🚀 App Launcher</h1>
+    
+    <div class="glass-card">
+      <div class="input-container">
+        <label>Website URL</label>
+        <input 
+          type="text" 
+          id="urlInput" 
+          placeholder="https://youtube.com"
+          onkeypress="if(event.key === 'Enter' && !event.shiftKey) publishURL()"
+        >
+      </div>
+
+      <div class="advanced-toggle" onclick="toggleAdvanced()">
+        <span class="advanced-icon">▶</span>
+        <span>Advanced Options</span>
+      </div>
+
+      <div class="advanced-section" id="advancedSection">
+        <div class="input-container">
+          <label>Custom Icon URL</label>
+          <input 
+            type="text" 
+            id="iconInput" 
+            placeholder="https://example.com/icon.png"
+            onkeypress="if(event.key === 'Enter') publishURL()"
+          >
+        </div>
+        <div class="divider">
+          <span>OR</span>
+        </div>
+        <div class="input-container">
+          <label>Upload Local Image</label>
+          <div class="file-upload-wrapper">
+            <input 
+              type="file" 
+              id="fileInput" 
+              accept="image/*"
+              style="display: none;"
+              onchange="handleFileSelect()"
+            >
+            <button class="btn-secondary" onclick="document.getElementById('fileInput').click()" type="button">
+              <span class="upload-icon">📁</span>
+              <span id="fileLabel">Choose Image File</span>
+            </button>
+          </div>
+          <div id="filePreview" class="file-preview"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="publishURL()" id="publishBtn">
+          Publish
+        </button>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <div id="urlsList"></div>
+  </div>
+
+  <script>
+    const API_URL = window.location.origin; // Auto-detect server URL
+    let isPublishing = false;
+    let uploadedIconUrl = null;
+
+    // Toggle advanced section
+    function toggleAdvanced() {
+      const section = document.getElementById('advancedSection');
+      const toggle = document.querySelector('.advanced-toggle');
+      section.classList.toggle('show');
+      toggle.classList.toggle('active');
+    }
+
+    // Handle file selection
+    function handleFileSelect() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      
+      if (!file) return;
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showStatus('Please select an image file', true);
+        return;
+      }
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        showStatus('File size must be less than 5MB', true);
+        return;
+      }
+      
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = document.getElementById('filePreview');
+        const fileLabel = document.getElementById('fileLabel');
+        
+        preview.innerHTML = `
+          <img src="${e.target.result}" alt="Preview">
+          <div class="file-preview-info">
+            <div class="file-preview-name">${file.name}</div>
+            <div class="file-preview-size">${(file.size / 1024).toFixed(1)} KB</div>
+          </div>
+          <div class="file-remove" onclick="clearFile()">×</div>
+        `;
+        preview.classList.add('show');
+        fileLabel.textContent = 'Change Image';
+      };
+      reader.readAsDataURL(file);
+      
+      // Upload file
+      uploadFile(file);
+    }
+
+    // Upload file to server
+    async function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('icon', file);
+      
+      try {
+        const response = await fetch(`${API_URL}/upload-icon`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload file');
+        }
+        
+        const data = await response.json();
+        uploadedIconUrl = data.iconUrl;
+        showStatus('✓ Image uploaded successfully');
+      } catch (error) {
+        showStatus('Failed to upload image', true);
+        clearFile();
+      }
+    }
+
+    // Clear file selection
+    function clearFile() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('filePreview').classList.remove('show');
+      document.getElementById('fileLabel').textContent = 'Choose Image File';
+      uploadedIconUrl = null;
+    }
+
+    // Format date
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+
+    // Show status message
+    function showStatus(message, isError = false) {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message show ${isError ? 'error' : 'success'}`;
+      
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 3000);
+    }
+
+    // Fetch and display URLs
+    async function fetchURLs() {
+      const listEl = document.getElementById('urlsList');
+      
+      try {
+        const response = await fetch(`${API_URL}/urls`);
+        if (!response.ok) throw new Error('Failed to fetch URLs');
+        
+        const urls = await response.json();
+        
+        if (urls.length === 0) {
+          listEl.innerHTML = `
+            <div class="glass-card">
+              <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <p>No apps published yet</p>
+                <p class="empty-subtitle">Add your first URL above to get started</p>
+              </div>
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = `
+            <div class="glass-card">
+              <div class="urls-list">
+                ${urls.map(item => `
+                  <div class="url-card">
+                    <img src="${item.favicon}" alt="${item.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'">
+                    <div class="url-info">
+                      <div class="url-title">${item.title}</div>
+                      <div class="url-link">${item.url}</div>
+                      <div class="url-date">Published ${formatDate(item.publishedAt)}</div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteURL('${item.id}')">
+                      Unpublish
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        listEl.innerHTML = `
+          <div class="glass-card">
+            <div class="empty-state">
+              <p style="color: #fca5a5;">⚠️ Unable to connect to server</p>
+              <p class="empty-subtitle">Make sure the server is running on port 3000</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Publish new URL
+    async function publishURL() {
+      if (isPublishing) return;
+      
+      const input = document.getElementById('urlInput');
+      const iconInput = document.getElementById('iconInput');
+      const btn = document.getElementById('publishBtn');
+      const url = input.value.trim();
+      const customIcon = iconInput.value.trim();
+      
+      if (!url) {
+        showStatus('Please enter a URL', true);
+        return;
+      }
+      
+      // Validate URL format
+      try {
+        new URL(url);
+      } catch {
+        showStatus('Please enter a valid URL (e.g., https://example.com)', true);
+        return;
+      }
+      
+      // Validate custom icon URL if provided
+      if (customIcon) {
+        try {
+          new URL(customIcon);
+        } catch {
+          showStatus('Please enter a valid icon URL', true);
+          return;
+        }
+      }
+      
+      isPublishing = true;
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+      
+      try {
+        const payload = { url };
+        
+        // Priority: uploaded file > custom URL > auto-fetch
+        if (uploadedIconUrl) {
+          payload.customIcon = uploadedIconUrl;
+        } else if (customIcon) {
+          payload.customIcon = customIcon;
+        }
+        
+        const response = await fetch(`${API_URL}/urls`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to publish URL');
+        }
+        
+        const newEntry = await response.json();
+        input.value = '';
+        iconInput.value = '';
+        clearFile();
+        showStatus(`✓ Published: ${newEntry.title}`);
+        fetchURLs();
+      } catch (error) {
+        showStatus(error.message, true);
+      } finally {
+        isPublishing = false;
+        btn.disabled = false;
+        btn.textContent = 'Publish';
+      }
+    }
+
+    // Delete URL
+    async function deleteURL(id) {
+      try {
+        const response = await fetch(`${API_URL}/urls/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete URL');
+        
+        showStatus('✓ URL unpublished');
+        fetchURLs();
+      } catch (error) {
+        showStatus('Failed to unpublish URL', true);
+      }
+    }
+
+    // Initial load and auto-refresh
+    fetchURLs();
+    setInterval(fetchURLs, 5000);
+  </script>
+</body>
+</html>
