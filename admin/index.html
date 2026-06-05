@@ -317,14 +317,23 @@
     .url-date  { font-size: 11px; color: rgba(255,255,255,0.26); }
 
     .btn-rm {
-      flex-shrink: 0; padding: 8px 16px; border-radius: 50px;
-      border: 1px solid rgba(248,113,113,0.25); cursor: pointer;
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      color: rgba(248,113,113,0.85);
-      background: rgba(248,113,113,0.09);
-      backdrop-filter: blur(16px); transition: all .22s;
+      flex-shrink: 0; padding: 8px 18px; border-radius: 50px;
+      border: 1.5px solid rgba(0,0,0,0.18); cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 4px 12px rgba(0,0,0,0.35);
+      transition: all .22s cubic-bezier(.34,1.46,.64,1);
+      letter-spacing: .1px;
     }
-    .btn-rm:hover { background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.45); transform: scale(1.04); }
+    .btn-rm:hover {
+      background: rgba(220,50,50,0.80);
+      border-color: rgba(255,100,100,0.40);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 18px rgba(180,0,0,0.40);
+      transform: scale(1.05);
+    }
 
     /* ══════ EMPTY STATE ══════ */
     .empty { padding: 56px 20px; text-align: center; }
@@ -363,7 +372,7 @@
       <div class="header">
         <div class="badge">
           <span class="badge-dot"></span>
-          <span style="position:relative;z-index:1">ConneQtion UI</span>
+          <span style="position:relative;z-index:1">Liquid Glass UI</span>
         </div>
         <h1>App Launcher</h1>
         <p>Publish and manage your web apps</p>
