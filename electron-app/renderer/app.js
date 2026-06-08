@@ -121,18 +121,24 @@ function renderURLs(urls) {
     const fallbackIcon = `https://logo.clearbit.com/${domain}`;
     const displayTitle = item.customName || item.title;
     
+    // Truncate title to max 8 characters
+    const shortTitle = displayTitle.length > 8 ? displayTitle.substring(0, 8) + '...' : displayTitle;
+    
     return `
     <div class="app-item ${item.pinned ? 'pinned' : ''}" 
          data-id="${item.id}"
          data-title="${escapeHtml(displayTitle)}">
-      <img 
-        class="app-icon" 
-        src="${item.favicon}" 
-        alt="${displayTitle}"
-        loading="eager"
-        onerror="this.onerror=null; this.src='${fallbackIcon}'; this.onerror=function(){ this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'; }"
-      >
-      ${item.pinned ? '<span class="pin-indicator">📌</span>' : ''}
+      <div class="app-icon-wrapper">
+        <img 
+          class="app-icon" 
+          src="${item.favicon}" 
+          alt="${displayTitle}"
+          loading="eager"
+          onerror="this.onerror=null; this.src='${fallbackIcon}'; this.onerror=function(){ this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'; }"
+        >
+        ${item.pinned ? '<span class="pin-indicator">📌</span>' : ''}
+      </div>
+      <div class="app-label">${escapeHtml(shortTitle)}</div>
     </div>
   `;
   }).join('');
