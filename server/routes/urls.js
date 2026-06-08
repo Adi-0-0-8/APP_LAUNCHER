@@ -12,7 +12,28 @@ const URLS_FILE = path.join(__dirname, '../urls.json');
 async function readURLs() {
   try {
     const data = await fs.readFile(URLS_FILE, 'utf8');
-    return JSON.parse(data);
+    const urls = JSON.parse(data);
+    
+    // Migration: Add missing fields to old entries
+    let needsSave = false;
+    urls.forEach(url => {
+      if (!url.hasOwnProperty('customName')) {
+        url.customName = null;
+        needsSave = true;
+      }
+      if (!url.hasOwnProperty('pinned')) {
+        url.pinned = false;
+        needsSave = true;
+      }
+    });
+    
+    // Save migrated data
+    if (needsSave) {
+      console.log('🔄 Migrating old entries with new fields...');
+      await writeURLs(urls);
+    }
+    
+    return urls;
   } catch (error) {
     return [];
   }
