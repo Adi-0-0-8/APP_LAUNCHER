@@ -76,7 +76,7 @@ app.use('/urls', urlsRouter);
 
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.1.0' });
 });
 
 // Start server
