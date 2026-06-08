@@ -371,7 +371,7 @@
       <!-- Header -->
       <div class="header">
         <div class="badge">
-          <span class="badge-dot"></span>
+          <span class="badge-dot" id="serverStatus"></span>
           <span style="position:relative;z-index:1">Liquid Glass UI</span>
         </div>
         <h1>App Launcher</h1>
@@ -424,7 +424,41 @@
     const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000'
       : 'https://app-launcher-u0x7.onrender.com';
+    
+    console.log('🌐 Admin Panel loaded');
+    console.log('📡 Using API:', API);
+    
     let busy = false, uploadedIcon = null;
+
+    // Keep server awake by pinging every 5 minutes
+    function keepServerAwake() {
+      const statusDot = document.getElementById('serverStatus');
+      if (statusDot) {
+        statusDot.style.background = '#fbbf24'; // yellow - checking
+        statusDot.style.boxShadow = '0 0 8px #fbbf24';
+      }
+      
+      fetch(`${API}/health`)
+        .then(r => {
+          console.log('✅ Server is awake');
+          if (statusDot) {
+            statusDot.style.background = '#4ade80'; // green - online
+            statusDot.style.boxShadow = '0 0 8px #4ade80';
+          }
+        })
+        .catch(e => {
+          console.warn('⚠️ Server ping failed:', e);
+          if (statusDot) {
+            statusDot.style.background = '#f87171'; // red - offline
+            statusDot.style.boxShadow = '0 0 8px #f87171';
+          }
+        });
+    }
+    
+    // Ping immediately on load
+    keepServerAwake();
+    // Then ping every 5 minutes
+    setInterval(keepServerAwake, 5 * 60 * 1000);
 
     function toggleAdv() {
       document.getElementById('advToggle').classList.toggle('open');
@@ -537,9 +571,21 @@
       console.log('Custom icon URL:', icon);
       console.log('Uploaded icon:', uploadedIcon);
 
-      // Create timeout promise (90 seconds to handle Render cold start)
+      // Check if server is awake first
+      let serverAwake = false;
+      try {
+        btn.innerHTML = '🌙&nbsp; Waking server...';
+        const healthCheck = await fetch(`${API}/health`, { method: 'GET' });
+        serverAwake = healthCheck.ok;
+        console.log('Server status:', serverAwake ? 'awake ✅' : 'sleeping 😴');
+        if (serverAwake) btn.innerHTML = '⏳&nbsp; Publishing…';
+      } catch(e) {
+        console.error('Health check failed:', e);
+      }
+
+      // Create timeout promise (60 seconds for cold start)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - please try again (server was sleeping)')), 90000)
+        setTimeout(() => reject(new Error('Timeout: Server took too long to respond. Please try again.')), 60000)
       );
 
       try {
