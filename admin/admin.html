@@ -447,11 +447,23 @@
     async function uploadFile(file) {
       const fd = new FormData(); fd.append('icon', file);
       try {
+        console.log('Uploading file to:', `${API}/upload-icon`);
         const r = await fetch(`${API}/upload-icon`, { method:'POST', body:fd });
-        if (!r.ok) throw 0;
-        uploadedIcon = (await r.json()).iconUrl;
+        console.log('Upload response status:', r.status);
+        if (!r.ok) {
+          const errText = await r.text();
+          console.error('Upload failed:', errText);
+          throw new Error(errText || 'Upload failed');
+        }
+        const result = await r.json();
+        console.log('Upload result:', result);
+        uploadedIcon = result.iconUrl;
         toast('✓ Image uploaded');
-      } catch { toast('Upload failed', true); clearFile(); }
+      } catch(e) { 
+        console.error('Upload error:', e);
+        toast('Upload failed: ' + (e.message || 'Unknown error'), true); 
+        clearFile(); 
+      }
     }
 
     function clearFile() {
@@ -504,7 +516,10 @@
     }
 
     async function publishURL() {
-      if (busy) return;
+      if (busy) {
+        console.log('Already publishing, ignoring click');
+        return;
+      }
       const url = document.getElementById('urlInput').value.trim();
       const icon = document.getElementById('iconInput').value.trim();
       if (!url) { toast('Please enter a URL', true); return; }
@@ -512,22 +527,66 @@
 
       busy = true;
       const btn = document.getElementById('pubBtn');
-      btn.disabled = true; btn.innerHTML = '⏳&nbsp; Publishing…';
+      btn.disabled = true; 
+      btn.innerHTML = '⏳&nbsp; Publishing…';
+      
+      console.log('Publishing URL:', url);
+      console.log('Custom icon URL:', icon);
+      console.log('Uploaded icon:', uploadedIcon);
+
+      // Create timeout promise (30 seconds)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - server may be sleeping')), 30000)
+      );
 
       try {
         const payload = { url };
         if (uploadedIcon) payload.customIcon = uploadedIcon;
         else if (icon) payload.customIcon = icon;
-        const res = await fetch(`${API}/urls`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-        if (!res.ok) { const e = await res.json(); throw new Error(e.error||'Failed'); }
+        
+        console.log('Sending payload:', payload);
+        
+        const fetchPromise = fetch(`${API}/urls`, { 
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body:JSON.stringify(payload) 
+        });
+        
+        // Race between fetch and timeout
+        const res = await Promise.race([fetchPromise, timeoutPromise]);
+        console.log('Publish response status:', res.status);
+        
+        if (!res.ok) { 
+          const errText = await res.text();
+          console.error('Publish error response:', errText);
+          let errMsg;
+          try {
+            const errJson = JSON.parse(errText);
+            errMsg = errJson.error || 'Failed to publish';
+          } catch {
+            errMsg = errText || 'Failed to publish';
+          }
+          throw new Error(errMsg); 
+        }
+        
         const entry = await res.json();
+        console.log('Published entry:', entry);
+        
         document.getElementById('urlInput').value = '';
         document.getElementById('iconInput').value = '';
         clearFile();
         toast(`✓ Published: ${entry.title}`);
         fetchURLs();
-      } catch(e) { toast(e.message, true); }
-      finally { busy=false; btn.disabled=false; btn.innerHTML='🚀&nbsp; Publish'; }
+      } catch(e) { 
+        console.error('Publish error:', e);
+        toast(e.message || 'Failed to publish', true); 
+      }
+      finally { 
+        console.log('Publishing complete, resetting button');
+        busy=false; 
+        btn.disabled=false; 
+        btn.innerHTML='🚀&nbsp; Publish'; 
+      }
     }
 
     async function deleteURL(id) {
