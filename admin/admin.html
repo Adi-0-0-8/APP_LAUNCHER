@@ -534,9 +534,9 @@
       console.log('Custom icon URL:', icon);
       console.log('Uploaded icon:', uploadedIcon);
 
-      // Create timeout promise (30 seconds)
+      // Create timeout promise (90 seconds to handle Render cold start)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - server may be sleeping')), 30000)
+        setTimeout(() => reject(new Error('Request timeout - please try again (server was sleeping)')), 90000)
       );
 
       try {
