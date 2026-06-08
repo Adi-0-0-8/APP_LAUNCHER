@@ -420,7 +420,10 @@
   </div>
 
   <script>
-    const API = 'https://app-launcher-u0x7.onrender.com';
+    // Use localhost if running locally, otherwise use Render
+    const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://app-launcher-u0x7.onrender.com';
     let busy = false, uploadedIcon = null;
 
     function toggleAdv() {
