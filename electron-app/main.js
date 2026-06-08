@@ -111,6 +111,35 @@ ipcMain.handle('open-url', async (event, url) => {
   }
 });
 
+// IPC Handler: Toggle pin
+ipcMain.handle('toggle-pin', async (event, appId) => {
+  return new Promise((resolve, reject) => {
+    const protocol = config.serverUrl.startsWith('https') ? https : http;
+    const url = `${config.serverUrl}/urls/${appId}/pin`;
+    
+    const req = protocol.request(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.end();
+  });
+});
+
 // IPC Handler: Expand window
 // IPC Handler: Expand window
 ipcMain.on('expand-window', () => {

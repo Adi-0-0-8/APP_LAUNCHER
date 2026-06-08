@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   fetchURLs: () => ipcRenderer.invoke('fetch-urls'),
   openURL: (url) => ipcRenderer.invoke('open-url', url),
+  togglePin: (appId) => ipcRenderer.invoke('toggle-pin', appId),
   expandWindow: () => ipcRenderer.send('expand-window'),
   collapseWindow: () => ipcRenderer.send('collapse-window'),
   quitApp: () => ipcRenderer.send('quit-app'),

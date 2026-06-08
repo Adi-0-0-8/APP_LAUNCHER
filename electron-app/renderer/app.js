@@ -122,7 +122,9 @@ function renderURLs(urls) {
     const displayTitle = item.customName || item.title;
     
     return `
-    <div class="app-item" onclick="openURL('${item.url.replace(/'/g, "\\'")}');" data-title="${escapeHtml(displayTitle)}">
+    <div class="app-item ${item.pinned ? 'pinned' : ''}" 
+         data-id="${item.id}"
+         data-title="${escapeHtml(displayTitle)}">
       <img 
         class="app-icon" 
         src="${item.favicon}" 
@@ -130,16 +132,40 @@ function renderURLs(urls) {
         loading="eager"
         onerror="this.onerror=null; this.src='${fallbackIcon}'; this.onerror=function(){ this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'; }"
       >
-      ${item.pinned ? '<span class="pin-badge">📌</span>' : ''}
+      ${item.pinned ? '<span class="pin-indicator">📌</span>' : ''}
     </div>
   `;
   }).join('');
+  
+  // Add click handlers after rendering
+  document.querySelectorAll('.app-item').forEach(appItem => {
+    const url = urls.find(u => u.id === appItem.dataset.id)?.url;
+    
+    // Left click - open URL
+    appItem.addEventListener('click', (e) => {
+      if (url) openURL(url);
+    });
+    
+    // Right click - show context menu to pin/unpin
+    appItem.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu(appItem.dataset.id, e.clientX, e.clientY);
+    });
+  });
 }
 
 // Fetch URLs from server
 async function fetchURLs() {
   try {
     const urls = await window.electronAPI.fetchURLs();
+    console.log('📥 Fetched URLs from server:', urls);
+    console.log('📊 Number of apps:', urls.length);
+    if (urls.length > 0) {
+      console.log('🔍 First app:', urls[0]);
+      console.log('   - Title:', urls[0].title);
+      console.log('   - Custom Name:', urls[0].customName);
+      console.log('   - Pinned:', urls[0].pinned);
+    }
     renderURLs(urls);
     
     if (isFirstLoad) {
@@ -152,6 +178,68 @@ async function fetchURLs() {
       showErrorState();
       isFirstLoad = false;
     }
+  }
+}
+
+// Show context menu for pin/unpin
+function showContextMenu(appId, x, y) {
+  // Remove existing menu if any
+  const existingMenu = document.getElementById('contextMenu');
+  if (existingMenu) existingMenu.remove();
+  
+  // Get app data
+  window.electronAPI.fetchURLs().then(urls => {
+    const app = urls.find(u => u.id === appId);
+    if (!app) return;
+    
+    const menu = document.createElement('div');
+    menu.id = 'contextMenu';
+    menu.className = 'context-menu';
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    
+    const pinnedCount = urls.filter(u => u.pinned).length;
+    const canPin = !app.pinned && pinnedCount < 5;
+    
+    menu.innerHTML = `
+      ${app.pinned 
+        ? '<div class="menu-item" data-action="unpin">📍 Unpin</div>' 
+        : canPin 
+          ? '<div class="menu-item" data-action="pin">📌 Pin</div>'
+          : '<div class="menu-item disabled">📌 Pin (Max 5 reached)</div>'
+      }
+    `;
+    
+    document.body.appendChild(menu);
+    
+    // Handle menu clicks
+    menu.querySelectorAll('.menu-item:not(.disabled)').forEach(item => {
+      item.addEventListener('click', () => {
+        const action = item.dataset.action;
+        if (action === 'pin' || action === 'unpin') {
+          togglePin(appId);
+        }
+        menu.remove();
+      });
+    });
+    
+    // Close menu on click outside
+    setTimeout(() => {
+      document.addEventListener('click', function closeMenu() {
+        menu.remove();
+        document.removeEventListener('click', closeMenu);
+      });
+    }, 100);
+  });
+}
+
+// Toggle pin status
+async function togglePin(appId) {
+  try {
+    await window.electronAPI.togglePin(appId);
+    fetchURLs(); // Refresh list
+  } catch (error) {
+    console.error('Failed to toggle pin:', error);
   }
 }
 
