@@ -109,19 +109,28 @@ function renderURLs(urls) {
   }
   lastURLs = urlsString;
   
+  // Sort: pinned first, then by date
+  urls.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.publishedAt) - new Date(a.publishedAt);
+  });
+  
   list.innerHTML = urls.map(item => {
-    const domain = new URL(item.url).hostname;
+    const domain = new URL(item.url).hostname.replace('www.', '');
     const fallbackIcon = `https://logo.clearbit.com/${domain}`;
+    const displayTitle = item.customName || item.title;
     
     return `
-    <div class="app-item" onclick="openURL('${item.url.replace(/'/g, "\\'")}');" data-title="${escapeHtml(item.title)}">
+    <div class="app-item" onclick="openURL('${item.url.replace(/'/g, "\\'")}');" data-title="${escapeHtml(displayTitle)}">
       <img 
         class="app-icon" 
         src="${item.favicon}" 
-        alt="${item.title}"
+        alt="${displayTitle}"
         loading="eager"
         onerror="this.onerror=null; this.src='${fallbackIcon}'; this.onerror=function(){ this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23888%22%3E%3Cpath d=%22M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z%22/%3E%3C/svg%3E'; }"
       >
+      ${item.pinned ? '<span class="pin-badge">📌</span>' : ''}
     </div>
   `;
   }).join('');

@@ -316,6 +316,32 @@
     .url-link  { font-size: 13px; color: rgba(255,255,255,0.40); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
     .url-date  { font-size: 11px; color: rgba(255,255,255,0.26); }
 
+    /* ══════ PIN BUTTON ══════ */
+    .btn-pin {
+      flex-shrink: 0; padding: 8px 18px; border-radius: 50px;
+      border: 1.5px solid rgba(251,191,36,0.25); cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,0.70);
+      background: rgba(251,191,36,0.08);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 4px 12px rgba(0,0,0,0.35);
+      transition: all .22s cubic-bezier(.34,1.46,.64,1);
+      letter-spacing: .1px;
+      margin-right: 8px;
+    }
+    .btn-pin:hover {
+      background: rgba(251,191,36,0.15);
+      border-color: rgba(251,191,36,0.40);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 18px rgba(251,191,36,0.25);
+      transform: scale(1.05);
+    }
+    .btn-pin.pinned {
+      background: rgba(251,191,36,0.25);
+      border-color: rgba(251,191,36,0.50);
+      color: rgba(255,255,255,0.95);
+    }
+
     .btn-rm {
       flex-shrink: 0; padding: 8px 18px; border-radius: 50px;
       border: 1.5px solid rgba(0,0,0,0.18); cursor: pointer;
@@ -380,6 +406,11 @@
 
       <!-- Publish card -->
       <div class="glass-card publish-card">
+        <div class="field">
+          <span class="field-label">Custom Name (Optional)</span>
+          <input class="glass-input" type="text" id="nameInput" placeholder="e.g., My Documents, Email, etc.">
+        </div>
+        
         <div class="field">
           <span class="field-label">Website URL</span>
           <input class="glass-input" type="text" id="urlInput" placeholder="https://youtube.com"
@@ -527,28 +558,56 @@
           w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">🌐</div><div class="empty-t">No apps published yet</div><div class="empty-s">Add your first URL above</div></div>`;
           return;
         }
+        
+        // Sort: pinned first, then by date
+        urls.sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return new Date(b.publishedAt) - new Date(a.publishedAt);
+        });
+        
+        const pinnedCount = urls.filter(u => u.pinned).length;
+        
         w.innerHTML = `
           <div class="list-header">
             <span class="list-title">Published Apps</span>
             <span class="count-badge">${urls.length}</span>
           </div>
           <div class="urls-list">
-            ${urls.map(u => `
+            ${urls.map(u => {
+              const domain = extractDomainFromUrl(u.url);
+              const displayTitle = u.customName || u.title;
+              return `
               <div class="glass-card url-card">
                 <div class="icon-wrap">
-                  <img src="${u.favicon}" alt="${u.title}"
+                  <img src="${u.favicon}" alt="${displayTitle}"
                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%228%22 fill=%22rgba(255,255,255,.1)%22/%3E%3Ctext x=%2220%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22%3E🌐%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="url-info">
-                  <div class="url-title">${u.title}</div>
-                  <div class="url-link">${u.url}</div>
+                  <div class="url-title">${displayTitle}${u.pinned ? ' 📌' : ''}</div>
+                  <div class="url-link">${domain}</div>
                   <div class="url-date">${fmt(u.publishedAt)}</div>
                 </div>
+                <button class="btn-pin ${u.pinned ? 'pinned' : ''}" 
+                  onclick="togglePin('${u.id}')"
+                  ${!u.pinned && pinnedCount >= 5 ? 'disabled title="Maximum 5 pinned apps"' : ''}>
+                  ${u.pinned ? '📌 Pinned' : 'Pin'}
+                </button>
                 <button class="btn-rm" onclick="deleteURL('${u.id}')">Remove</button>
-              </div>`).join('')}
+              </div>`;
+            }).join('')}
           </div>`;
       } catch {
         w.innerHTML = `<div class="glass-card empty"><div class="empty-icon">⚠️</div><div class="empty-t">Can't reach server</div><div class="empty-s">Make sure the backend is running</div></div>`;
+      }
+    }
+
+    function extractDomainFromUrl(url) {
+      try {
+        const urlObj = new URL(url);
+        return urlObj.hostname.replace('www.', '');
+      } catch {
+        return url;
       }
     }
 
@@ -559,6 +618,8 @@
       }
       const url = document.getElementById('urlInput').value.trim();
       const icon = document.getElementById('iconInput').value.trim();
+      const customName = document.getElementById('nameInput').value.trim();
+      
       if (!url) { toast('Please enter a URL', true); return; }
       try { new URL(url); } catch { toast('Enter a valid URL', true); return; }
 
@@ -568,6 +629,7 @@
       btn.innerHTML = '⏳&nbsp; Publishing…';
       
       console.log('Publishing URL:', url);
+      console.log('Custom name:', customName);
       console.log('Custom icon URL:', icon);
       console.log('Uploaded icon:', uploadedIcon);
 
@@ -590,6 +652,7 @@
 
       try {
         const payload = { url };
+        if (customName) payload.customName = customName;
         if (uploadedIcon) payload.customIcon = uploadedIcon;
         else if (icon) payload.customIcon = icon;
         
@@ -623,8 +686,9 @@
         
         document.getElementById('urlInput').value = '';
         document.getElementById('iconInput').value = '';
+        document.getElementById('nameInput').value = '';
         clearFile();
-        toast(`✓ Published: ${entry.title}`);
+        toast(`✓ Published: ${entry.customName || entry.title}`);
         fetchURLs();
       } catch(e) { 
         console.error('Publish error:', e);
@@ -644,6 +708,21 @@
         toast('✓ Removed');
         fetchURLs();
       } catch { toast('Failed to remove', true); }
+    }
+
+    async function togglePin(id) {
+      try {
+        const res = await fetch(`${API}/urls/${id}/pin`, {method:'POST'});
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to pin');
+        }
+        const result = await res.json();
+        toast(result.pinned ? '📌 Pinned' : '✓ Unpinned');
+        fetchURLs();
+      } catch(e) { 
+        toast(e.message || 'Failed to toggle pin', true); 
+      }
     }
 
     fetchURLs();

@@ -169,9 +169,10 @@ router.get('/', async (req, res) => {
 // POST /urls - Add new URL
 router.post('/', async (req, res) => {
   try {
-    const { url, customIcon } = req.body;
+    const { url, customIcon, customName } = req.body;
     
     console.log(`📨 POST /urls received: ${url}`);
+    if (customName) console.log(`🏷️ Custom name: ${customName}`);
     
     if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: 'URL is required' });
@@ -216,17 +217,50 @@ router.post('/', async (req, res) => {
       url,
       favicon,
       title,
+      customName: customName || null,
+      pinned: false,
       publishedAt: new Date().toISOString()
     };
     
     urls.push(newEntry);
     await writeURLs(urls);
     
-    console.log(`✅ Published: ${title} (${url})`);
+    console.log(`✅ Published: ${customName || title} (${url})`);
     res.status(201).json(newEntry);
   } catch (error) {
     console.error(`❌ Error publishing URL:`, error);
     res.status(500).json({ error: 'Failed to add URL' });
+  }
+});
+
+// POST /urls/:id/pin - Toggle pin status
+router.post('/:id/pin', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const urls = await readURLs();
+    
+    const urlEntry = urls.find(item => item.id === id);
+    
+    if (!urlEntry) {
+      return res.status(404).json({ error: 'URL not found' });
+    }
+    
+    // Check if trying to pin when already at limit
+    const pinnedCount = urls.filter(u => u.pinned).length;
+    if (!urlEntry.pinned && pinnedCount >= 5) {
+      return res.status(400).json({ error: 'Maximum 5 apps can be pinned' });
+    }
+    
+    // Toggle pin status
+    urlEntry.pinned = !urlEntry.pinned;
+    
+    await writeURLs(urls);
+    
+    console.log(`${urlEntry.pinned ? '📌 Pinned' : '📍 Unpinned'}: ${urlEntry.customName || urlEntry.title}`);
+    res.json({ success: true, pinned: urlEntry.pinned });
+  } catch (error) {
+    console.error(`❌ Error toggling pin:`, error);
+    res.status(500).json({ error: 'Failed to toggle pin' });
   }
 });
 
