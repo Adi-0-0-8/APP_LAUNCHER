@@ -28,7 +28,21 @@ function fetchPageMetadata(url) {
   return new Promise((resolve, reject) => {
     const protocol = url.startsWith('https') ? https : http;
     
-    protocol.get(url, { timeout: 5000 }, (res) => {
+    const timeout = setTimeout(() => {
+      const domain = extractDomain(url);
+      console.log(`⏱️ Timeout fetching ${url}, using domain as fallback`);
+      resolve({ 
+        title: domain || 'Untitled',
+        favicon: `https://logo.clearbit.com/${domain}`
+      });
+    }, 10000); // 10 second timeout
+    
+    const request = protocol.get(url, { 
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    }, (res) => {
       let data = '';
       
       res.on('data', (chunk) => {
@@ -40,6 +54,7 @@ function fetchPageMetadata(url) {
       });
       
       res.on('end', () => {
+        clearTimeout(timeout);
         const titleMatch = data.match(/<title[^>]*>([^<]+)<\/title>/i);
         const title = titleMatch ? titleMatch[1].trim() : 'Untitled';
         
@@ -80,16 +95,22 @@ function fetchPageMetadata(url) {
           favicon = `https://logo.clearbit.com/${domain}`;
         }
         
+        console.log(`✅ Fetched metadata for ${url}: ${title}`);
         resolve({ title, favicon });
       });
     }).on('error', (error) => {
+      clearTimeout(timeout);
       const domain = extractDomain(url);
+      console.log(`❌ Error fetching ${url}:`, error.message);
       resolve({ 
         title: domain || 'Untitled',
         favicon: `https://logo.clearbit.com/${domain}`
       });
     }).on('timeout', () => {
+      clearTimeout(timeout);
+      request.destroy();
       const domain = extractDomain(url);
+      console.log(`⏱️ Request timeout for ${url}`);
       resolve({ 
         title: domain || 'Untitled',
         favicon: `https://logo.clearbit.com/${domain}`
@@ -150,6 +171,8 @@ router.post('/', async (req, res) => {
   try {
     const { url, customIcon } = req.body;
     
+    console.log(`📨 POST /urls received: ${url}`);
+    
     if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: 'URL is required' });
     }
@@ -171,6 +194,8 @@ router.post('/', async (req, res) => {
         new URL(customIcon); // Validate custom icon URL
         favicon = customIcon;
         
+        console.log(`🎨 Using custom icon: ${customIcon}`);
+        
         // Still fetch title from the page
         const metadata = await fetchPageMetadata(url);
         title = metadata.title;
@@ -178,6 +203,7 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Invalid custom icon URL' });
       }
     } else {
+      console.log(`🔍 Fetching metadata for: ${url}`);
       // Fetch page title and favicon automatically
       const metadata = await fetchPageMetadata(url);
       title = metadata.title;
@@ -196,8 +222,10 @@ router.post('/', async (req, res) => {
     urls.push(newEntry);
     await writeURLs(urls);
     
+    console.log(`✅ Published: ${title} (${url})`);
     res.status(201).json(newEntry);
   } catch (error) {
+    console.error(`❌ Error publishing URL:`, error);
     res.status(500).json({ error: 'Failed to add URL' });
   }
 });
