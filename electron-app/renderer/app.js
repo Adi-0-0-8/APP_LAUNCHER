@@ -158,26 +158,63 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchURLs, 5000);
 });
 
-// Auto-updater notification function
-function showUpdateNotification(message, onClick) {
-  console.log('🔔', message);
-  // Simple console notification - app will auto-install on quit
+// Auto-updater UI notification
+function showUpdateBanner(message, type, actionText, actionFn) {
+  // Remove existing banner
+  const existing = document.getElementById('updateBanner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner ' + (type || '');
+  
+  let html = `<div class="update-text">${message}</div>`;
+  if (actionText && actionFn) {
+    html += `<button class="update-action">${actionText}</button>`;
+  }
+  banner.innerHTML = html;
+  
+  const sidebar = document.getElementById('sidebar');
+  sidebar.appendChild(banner);
+  
+  if (actionFn) {
+    banner.querySelector('.update-action').addEventListener('click', (e) => {
+      e.stopPropagation();
+      actionFn();
+    });
+  }
 }
 
 // Setup auto-updater listeners
 if (window.electronAPI.onUpdateAvailable) {
   window.electronAPI.onUpdateAvailable((info) => {
     console.log('🆕 Update available:', info.version);
-    showUpdateNotification('New version available! Will download automatically.');
-    window.electronAPI.downloadUpdate();
+    showUpdateBanner(
+      `Update v${info.version} available!`,
+      'available',
+      'Download',
+      () => {
+        window.electronAPI.downloadUpdate();
+        showUpdateBanner('Downloading update...', 'downloading');
+      }
+    );
   });
   
   window.electronAPI.onDownloadProgress((percent) => {
-    console.log('⬇️ Downloading update:', Math.round(percent) + '%');
+    const rounded = Math.round(percent);
+    console.log('⬇️ Downloading update:', rounded + '%');
+    showUpdateBanner(`Downloading... ${rounded}%`, 'downloading');
   });
   
   window.electronAPI.onUpdateDownloaded((info) => {
-    console.log('✅ Update downloaded:', info.version, '- Will install on app restart');
-    showUpdateNotification('Update ready! Will install on next restart.');
+    console.log('✅ Update downloaded:', info.version);
+    showUpdateBanner(
+      `v${info.version} ready!`,
+      'ready',
+      'Install & Restart',
+      () => {
+        window.electronAPI.installUpdate();
+      }
+    );
   });
 }

@@ -1,6 +1,6 @@
 {
   "name": "launcher-app",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "App Launcher - Quick access to your favorite apps",
   "main": "main.js",
   "author": "Aditya U",
@@ -70,9 +70,11 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "AppLauncher-Setup.exe"
+      "artifactName": "AppLauncher-Setup.exe",
+      "include": "installer.nsh"
     },
     "compression": "maximum",
     "asar": true,
