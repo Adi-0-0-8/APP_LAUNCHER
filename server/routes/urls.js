@@ -208,6 +208,17 @@ router.post('/', async (req, res) => {
     
     const urls = await readURLs();
     
+    // Check for duplicate URL
+    const existingUrl = urls.find(item => item.url === url);
+    if (existingUrl) {
+      console.log(`⚠️ Duplicate URL detected: ${url}`);
+      return res.status(409).json({ 
+        error: 'URL already exists',
+        message: `This URL is already published as "${existingUrl.customName || existingUrl.title}"`,
+        existingEntry: existingUrl
+      });
+    }
+    
     let title, favicon;
     
     // If custom icon provided, use it directly

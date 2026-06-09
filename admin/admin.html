@@ -674,7 +674,12 @@
           let errMsg;
           try {
             const errJson = JSON.parse(errText);
-            errMsg = errJson.error || 'Failed to publish';
+            // Check for duplicate URL error (409 Conflict)
+            if (res.status === 409) {
+              errMsg = errJson.message || 'This URL already exists';
+            } else {
+              errMsg = errJson.error || 'Failed to publish';
+            }
           } catch {
             errMsg = errText || 'Failed to publish';
           }
