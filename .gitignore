@@ -28,5 +28,5 @@ Thumbs.db
 npm-debug.log*
 
 # Data
-server/urls.json
+# server/urls.json        ← Commented out so URLs persist
 electron-app/config.json
