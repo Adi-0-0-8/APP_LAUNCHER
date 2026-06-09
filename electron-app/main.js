@@ -203,6 +203,14 @@ ipcMain.on('install-update', () => {
 app.whenReady().then(() => {
   createWindow();
   
+  // Set app to launch automatically on system startup
+  if (process.env.NODE_ENV !== 'development') {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      path: app.getPath('exe')
+    });
+  }
+  
   // Check for updates after 3 seconds (give app time to load)
   setTimeout(() => {
     if (process.env.NODE_ENV !== 'development') {
