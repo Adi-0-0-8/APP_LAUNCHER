@@ -131,13 +131,19 @@ function createWindow() {
     if (!mainWindow || mainWindow.isDestroyed()) return;
 
     const mousePos = screen.getCursorScreenPoint();
+    const bounds = mainWindow.getBounds();
+    const centerY = bounds.y + (bounds.height / 2);
+    
+    // Create a forgiving hit-area (120px tall) around the purple line
+    const triggerTop = centerY - 60; 
+    const triggerBottom = centerY + 60;
 
-    if (!isExpanded && mousePos.x <= 8) {
-      // Mouse is at the left edge → expand
+    if (!isExpanded && mousePos.x <= 8 && mousePos.y >= triggerTop && mousePos.y <= triggerBottom) {
+      // Mouse is at the left edge AND near the purple line → expand
       isExpanded = true;
       mainWindow.setIgnoreMouseEvents(false);          // accept clicks
       mainWindow.webContents.send('expanded');
-      console.log('🖱️  Mouse at edge → expand');
+      console.log('🖱️  Mouse at purple line → expand');
     } else if (isExpanded && mousePos.x > 120) {
       // Mouse moved well past the sidebar → collapse
       isExpanded = false;
