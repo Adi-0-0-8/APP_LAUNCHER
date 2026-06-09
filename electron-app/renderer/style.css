@@ -82,6 +82,7 @@ body {
 /* ── Hide everything when collapsed ── */
 .sidebar:not(.expanded) .close-btn,
 .sidebar:not(.expanded) .version-badge,
+.sidebar:not(.expanded) .update-banner,
 .sidebar:not(.expanded) .loading,
 .sidebar:not(.expanded) .empty-state,
 .sidebar:not(.expanded) .error-state,
