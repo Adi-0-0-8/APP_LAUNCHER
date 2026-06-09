@@ -1,9 +1,10 @@
 {
   "name": "launcher-app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "App Launcher - Quick access to your favorite apps",
   "main": "main.js",
-  "author": "Your Name",
+  "author": "Aditya U",
+  "copyright": "Copyright © 2026 Aditya U",
   "repository": {
     "type": "git",
     "url": "https://github.com/Adi-0-0-8/APP_LAUNCHER"
@@ -61,7 +62,7 @@
       ],
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false,
-      "publisherName": "AppLauncher"
+      "publisherName": "Aditya U"
     },
     "portable": {
       "artifactName": "AppLauncher-Portable.exe"
