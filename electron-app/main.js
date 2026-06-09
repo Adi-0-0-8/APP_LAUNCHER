@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, shell, screen } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const http = require('http');
 const https = require('https');
@@ -14,7 +15,45 @@ const SERVER_URL = process.env.SERVER_URL || 'https://app-launcher-u0x7.onrender
 console.log('===========================================');
 console.log('🚀 Starting Electron App');
 console.log('📡 Server URL:', SERVER_URL);
+console.log('📦 App Version:', app.getVersion());
 console.log('===========================================');
+
+// Configure auto-updater
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+
+autoUpdater.on('checking-for-update', () => {
+  console.log('🔍 Checking for updates...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('✅ Update available:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-available', info);
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('✅ App is up to date:', info.version);
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('❌ Update error:', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`⬇️ Download progress: ${Math.round(progressObj.percent)}%`);
+  if (mainWindow) {
+    mainWindow.webContents.send('download-progress', progressObj.percent);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('✅ Update downloaded:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-downloaded', info);
+  }
+});
 
 // Load or create configuration
 function loadConfig() {
@@ -149,8 +188,30 @@ ipcMain.on('quit-app', () => {
   app.quit();
 });
 
+// IPC Handler: Download update
+ipcMain.on('download-update', () => {
+  console.log('⬇️ Starting update download...');
+  autoUpdater.downloadUpdate();
+});
+
+// IPC Handler: Install update
+ipcMain.on('install-update', () => {
+  console.log('🔄 Installing update and restarting...');
+  autoUpdater.quitAndInstall();
+});
+
 app.whenReady().then(() => {
   createWindow();
+  
+  // Check for updates after 3 seconds (give app time to load)
+  setTimeout(() => {
+    if (process.env.NODE_ENV !== 'development') {
+      console.log('🔍 Checking for updates...');
+      autoUpdater.checkForUpdates().catch(err => {
+        console.log('⚠️ Could not check for updates:', err.message);
+      });
+    }
+  }, 3000);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

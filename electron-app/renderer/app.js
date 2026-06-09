@@ -157,3 +157,27 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchURLs();
   setInterval(fetchURLs, 5000);
 });
+
+// Auto-updater notification function
+function showUpdateNotification(message, onClick) {
+  console.log('🔔', message);
+  // Simple console notification - app will auto-install on quit
+}
+
+// Setup auto-updater listeners
+if (window.electronAPI.onUpdateAvailable) {
+  window.electronAPI.onUpdateAvailable((info) => {
+    console.log('🆕 Update available:', info.version);
+    showUpdateNotification('New version available! Will download automatically.');
+    window.electronAPI.downloadUpdate();
+  });
+  
+  window.electronAPI.onDownloadProgress((percent) => {
+    console.log('⬇️ Downloading update:', Math.round(percent) + '%');
+  });
+  
+  window.electronAPI.onUpdateDownloaded((info) => {
+    console.log('✅ Update downloaded:', info.version, '- Will install on app restart');
+    showUpdateNotification('Update ready! Will install on next restart.');
+  });
+}
