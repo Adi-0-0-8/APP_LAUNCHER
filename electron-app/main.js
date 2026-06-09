@@ -136,13 +136,13 @@ function createWindow() {
       // Mouse is at the left edge → expand
       isExpanded = true;
       mainWindow.setIgnoreMouseEvents(false);          // accept clicks
-      mainWindow.webContents.send('sidebar-expand');
+      mainWindow.webContents.send('expanded');
       console.log('🖱️  Mouse at edge → expand');
     } else if (isExpanded && mousePos.x > 120) {
       // Mouse moved well past the sidebar → collapse
       isExpanded = false;
       mainWindow.setIgnoreMouseEvents(true, { forward: true }); // click-through
-      mainWindow.webContents.send('sidebar-collapse');
+      mainWindow.webContents.send('collapsed');
       console.log('🖱️  Mouse away → collapse');
     }
   }, 100);
