@@ -1,0 +1,128 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'electron-app/**'
+      - '.github/workflows/release.yml'
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd electron-app
+          npm ci
+
+      - name: Get version from package.json
+        id: package-version
+        run: |
+          cd electron-app
+          $version = node -p "require('./package.json').version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "Version: $version"
+
+      - name: Check if release exists
+        id: check-release
+        run: |
+          $version = "${{ steps.package-version.outputs.version }}"
+          $headers = @{
+            Authorization = "token ${{ secrets.GITHUB_TOKEN }}"
+            Accept = "application/vnd.github.v3+json"
+          }
+          try {
+            $response = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/v$version" -Headers $headers -ErrorAction Stop
+            echo "exists=true" >> $env:GITHUB_OUTPUT
+            echo "Release v$version already exists, skipping build"
+          } catch {
+            echo "exists=false" >> $env:GITHUB_OUTPUT
+            echo "Release v$version does not exist, will create"
+          }
+
+      - name: Build Electron app
+        if: steps.check-release.outputs.exists == 'false'
+        run: |
+          cd electron-app
+          npm run build
+          npx electron-builder --win nsis --config
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        if: steps.check-release.outputs.exists == 'false'
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          release_name: Version ${{ steps.package-version.outputs.version }}
+          body: |
+            ## 🚀 What's New in v${{ steps.package-version.outputs.version }}
+            
+            Auto-generated release from latest commit.
+            
+            ### 📦 Download:
+            - **AppLauncher-Setup.exe** - Recommended (supports auto-update)
+            - **AppLauncher-Portable.exe** - Portable version
+            
+            ### 📝 Changes:
+            ${{ github.event.head_commit.message }}
+            
+            ---
+            
+            **For existing users:** Your app will auto-update when you restart it.
+            **For new users:** Download and run AppLauncher-Setup.exe
+          draft: false
+          prerelease: false
+
+      - name: Upload Setup.exe
+        if: steps.check-release.outputs.exists == 'false'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./electron-app/dist/AppLauncher-Setup.exe
+          asset_name: AppLauncher-Setup.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Portable.exe
+        if: steps.check-release.outputs.exists == 'false'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./electron-app/dist/AppLauncher-Portable.exe
+          asset_name: AppLauncher-Portable.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload latest.yml
+        if: steps.check-release.outputs.exists == 'false'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./electron-app/dist/latest.yml
+          asset_name: latest.yml
+          asset_content_type: text/yaml
+
+      - name: Release Complete
+        if: steps.check-release.outputs.exists == 'false'
+        run: |
+          echo "✅ Release v${{ steps.package-version.outputs.version }} created successfully!"
+          echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.package-version.outputs.version }}"
