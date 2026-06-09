@@ -44,8 +44,9 @@ function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { height: screenHeight } = primaryDisplay.workArea;
   
+  // Window stays fixed size - NEVER resized
   mainWindow = new BrowserWindow({
-    width: 80,
+    width: 110,
     height: screenHeight,
     x: 0,
     y: 0,
@@ -55,6 +56,7 @@ function createWindow() {
     resizable: false,
     alwaysOnTop: true,
     skipTaskbar: true,
+    hasShadow: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -77,6 +79,34 @@ function createWindow() {
   mainWindow.on('close', () => {
     saveConfig(config);
   });
+
+  // --- Mouse-based expand/collapse ---
+  let isExpanded = false;
+
+  // Start collapsed: ignore mouse events but forward them so we still get
+  // Chromium-level mousemove for the hover-detection strip
+  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
+  // Poll the global cursor position every 100 ms
+  setInterval(() => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+
+    const mousePos = screen.getCursorScreenPoint();
+
+    if (!isExpanded && mousePos.x <= 8) {
+      // Mouse is at the left edge → expand
+      isExpanded = true;
+      mainWindow.setIgnoreMouseEvents(false);          // accept clicks
+      mainWindow.webContents.send('sidebar-expand');
+      console.log('🖱️  Mouse at edge → expand');
+    } else if (isExpanded && mousePos.x > 120) {
+      // Mouse moved well past the sidebar → collapse
+      isExpanded = false;
+      mainWindow.setIgnoreMouseEvents(true, { forward: true }); // click-through
+      mainWindow.webContents.send('sidebar-collapse');
+      console.log('🖱️  Mouse away → collapse');
+    }
+  }, 100);
 }
 
 // IPC Handler: Fetch URLs from server
@@ -111,59 +141,8 @@ ipcMain.handle('open-url', async (event, url) => {
   }
 });
 
-// IPC Handler: Toggle pin
-ipcMain.handle('toggle-pin', async (event, appId) => {
-  return new Promise((resolve, reject) => {
-    const protocol = config.serverUrl.startsWith('https') ? https : http;
-    const url = `${config.serverUrl}/urls/${appId}/pin`;
-    
-    const req = protocol.request(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
-    
-    req.on('error', (error) => {
-      reject(error);
-    });
-    
-    req.end();
-  });
-});
 
-// IPC Handler: Expand window
-// IPC Handler: Expand window
-ipcMain.on('expand-window', () => {
-  if (mainWindow) {
-    console.log('📢 Expand window called');
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { height: screenHeight } = primaryDisplay.workArea;
-    mainWindow.setSize(80, screenHeight);
-    mainWindow.setPosition(0, 0);
-    console.log('✅ Window expanded to 80px');
-  }
-});
 
-// IPC Handler: Collapse window
-ipcMain.on('collapse-window', () => {
-  if (mainWindow) {
-    console.log('📢 Collapse window called');
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { height: screenHeight } = primaryDisplay.workArea;
-    mainWindow.setSize(5, screenHeight);
-    mainWindow.setPosition(0, 0);
-    console.log('✅ Window collapsed to 5px');
-  }
-});
 
 // IPC Handler: Quit app
 ipcMain.on('quit-app', () => {
