@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "app-launcher-go",
+  "outputfilename": "app-launcher-go",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Adi-0-0-8",
+    "email": "adityau2976@gmail.com"
+  }
+}
