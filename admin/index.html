@@ -1,432 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — App Launcher</title>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppLauncher Login</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%; width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+  }
+  body {
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
 
-    html, body {
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-      overflow: hidden;
-    }
+  .scene {
+    position: relative;
+    width: 420px; height: 520px;
+    display: flex; align-items: center; justify-content: center;
+  }
 
-    body { 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      position: relative; 
-      min-height: 100vh; 
-    }
+  canvas#ribbons {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
 
-    /* Liquid glass background */
-    .bg {
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 70% at 15% 20%,  rgba(147, 197, 253, 0.4) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 60% at 85% 15%,  rgba(196, 181, 253, 0.35) 0%, transparent 50%),
-        radial-gradient(ellipse 65% 55% at 75% 85%,  rgba(165, 243, 252, 0.3) 0%, transparent 48%),
-        radial-gradient(ellipse 50% 50% at 25% 80%,  rgba(199, 210, 254, 0.35) 0%, transparent 52%),
-        linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+  .card {
+    position: relative; z-index: 2;
+    width: 300px;
+    background: rgba(40, 44, 48, 0.55);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.13);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.18) inset,
+      0 32px 64px rgba(0,0,0,0.60),
+      0 8px 24px rgba(0,0,0,0.40);
+    padding: 32px 28px 24px;
+  }
 
-    /* Animated soft orbs */
-    .orb {
-      position: fixed; border-radius: 50%;
-      filter: blur(90px); pointer-events: none; z-index: 0;
-      mix-blend-mode: overlay;
-    }
-    .o1 { width: 500px; height: 500px; background: rgba(147, 197, 253, 0.5); top: -180px; left: -140px; animation: f1 28s ease-in-out infinite; }
-    .o2 { width: 420px; height: 420px; background: rgba(196, 181, 253, 0.45); top: -60px; right: -100px; animation: f2 34s ease-in-out infinite; }
-    .o3 { width: 380px; height: 380px; background: rgba(165, 243, 252, 0.4); bottom: -100px; right: 8%;  animation: f3 24s ease-in-out infinite; }
-    .o4 { width: 350px; height: 350px; background: rgba(199, 210, 254, 0.4); bottom: -80px; left: 10%;  animation: f4 30s ease-in-out infinite; }
+  .heading {
+    text-align: center;
+    margin-bottom: 22px;
+    line-height: 1.2;
+  }
+  .heading .line1 {
+    font-size: 22px; font-weight: 800; letter-spacing: 1px;
+    color: #fff;
+  }
+  .heading .line1 span { color: #00e5cc; }
+  .heading .line2 {
+    font-size: 18px; font-weight: 400; letter-spacing: 3px;
+    color: rgba(255,255,255,0.85);
+    margin-top: 2px;
+  }
 
-    @keyframes f1 { 0%,100%{transform:translate(0,0) scale(1)}   45%{transform:translate(60px,80px) scale(1.08)}  75%{transform:translate(-25px,35px) scale(.95)} }
-    @keyframes f2 { 0%,100%{transform:translate(0,0) scale(1)}   40%{transform:translate(-70px,55px) scale(1.06)} 70%{transform:translate(35px,-30px) scale(.94)} }
-    @keyframes f3 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(45px,-60px) scale(1.10)} }
-    @keyframes f4 { 0%,100%{transform:translate(0,0) scale(1)}   48%{transform:translate(-40px,45px) scale(1.05)} }
+  .login-label {
+    font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.80);
+    margin-bottom: 12px;
+  }
 
-    /* Page layout */
-    .page {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 24px;
-    }
+  .input-wrap {
+    position: relative; margin-bottom: 12px;
+  }
+  .glass-input {
+    width: 100%;
+    padding: 13px 44px 13px 16px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 1px 0 0 rgba(255,255,255,0.10) inset;
+    color: rgba(255,255,255,0.85);
+    font-family: inherit; font-size: 14px;
+    outline: none;
+    transition: background .2s, border-color .2s;
+  }
+  .glass-input::placeholder { color: rgba(255,255,255,0.45); font-size: 14px; }
+  .glass-input:focus {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(0,229,204,0.40);
+  }
+  .input-icon {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 15px; opacity: .55; pointer-events: none;
+  }
 
-    /* Badge */
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 22px; border-radius: 50px; margin-bottom: 32px;
-      background: rgba(255,255,255,0.25);
-      backdrop-filter: blur(30px) saturate(1.8);
-      -webkit-backdrop-filter: blur(30px) saturate(1.8);
-      border: 1px solid rgba(255,255,255,0.4);
-      color: rgba(255,255,255,0.95);
-      font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
-      box-shadow: 
-        0 2px 0 rgba(255,255,255,0.5) inset,
-        0 8px 32px rgba(0,0,0,0.1);
-      position: relative; overflow: hidden;
-    }
-    .badge::before {
-      content: '';
-      position: absolute; inset: 0; border-radius: 50px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
-    }
-    .badge-dot { 
-      width: 7px; height: 7px; border-radius: 50%; 
-      background: linear-gradient(135deg, #60a5fa, #3b82f6); 
-      box-shadow: 0 0 12px rgba(96, 165, 250, 0.8); 
-      flex-shrink: 0; position: relative; z-index: 1; 
-    }
-    .badge span { position: relative; z-index: 1; }
+  .btn-wrap {
+    display: flex; justify-content: center;
+    margin: 18px 0 16px;
+  }
+  .login-btn {
+    padding: 10px 42px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.22);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.30) inset,
+      0 4px 16px rgba(0,0,0,0.30);
+    color: rgba(255,255,255,0.90);
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    letter-spacing: 1.5px; cursor: pointer;
+    transition: all .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .login-btn::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .login-btn:hover {
+    background: rgba(255,255,255,0.20);
+    border-color: rgba(0,229,204,0.45);
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.35) inset,
+      0 8px 24px rgba(0,0,0,0.40);
+  }
+  .login-btn:active { transform: scale(.97); }
 
-    /* Login card */
-    .card {
-      width: 100%; max-width: 440px;
-      position: relative;
-      background: rgba(255,255,255,0.20);
-      backdrop-filter: blur(60px) saturate(1.5) brightness(1.15);
-      -webkit-backdrop-filter: blur(60px) saturate(1.5) brightness(1.15);
-      border-radius: 32px;
-      border: 1.5px solid rgba(255,255,255,0.35);
-      box-shadow:
-        0 2.5px 0 rgba(255,255,255,0.7) inset,
-        0 -1.5px 0 rgba(255,255,255,0.2) inset,
-        0 30px 90px rgba(0,0,0,0.15),
-        0  8px 24px rgba(0,0,0,0.1);
-      overflow: hidden;
-      padding: 48px 40px 40px;
-      animation: popIn .7s cubic-bezier(.34,1.56,.64,1);
-    }
-    .card::before {
-      content: '';
-      position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none;
-      background: linear-gradient(145deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
-    }
-    .card::after {
-      content: '';
-      position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none;
-      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.3) 0%, transparent 50%);
-    }
-    .card > * { position: relative; z-index: 1; }
+  .footer-links {
+    display: flex; justify-content: space-between;
+    margin-top: 4px;
+  }
+  .footer-links a {
+    font-size: 11.5px; color: rgba(255,255,255,0.45);
+    text-decoration: none; cursor: pointer;
+    transition: color .2s;
+  }
+  .footer-links a:hover { color: rgba(0,229,204,0.80); }
 
-    /* Card icon */
-    .card-icon {
-      width: 72px; height: 72px;
-      margin: 0 auto 24px;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.25);
-      border: 1.5px solid rgba(255,255,255,0.45);
-      backdrop-filter: blur(30px);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 34px;
-      box-shadow: 
-        0 2px 0 rgba(255,255,255,0.6) inset, 
-        0 12px 32px rgba(0,0,0,0.1);
-      position: relative; overflow: hidden;
-    }
-    .card-icon::before {
-      content: ''; position: absolute; inset: 0; border-radius: 22px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 60%);
-    }
-
-    .card-title {
-      text-align: center;
-      font-size: 2rem; font-weight: 800;
-      color: rgba(255,255,255,0.98);
-      letter-spacing: -1.2px; margin-bottom: 8px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .card-sub {
-      text-align: center;
-      font-size: 15px; color: rgba(255,255,255,0.75);
-      margin-bottom: 36px; font-weight: 500;
-    }
-
-    /* Fields */
-    .field { margin-bottom: 18px; }
-
-    .field-label {
-      display: block; font-size: 12px; font-weight: 700;
-      letter-spacing: .8px; text-transform: uppercase;
-      color: rgba(255,255,255,0.70); margin-bottom: 10px;
-    }
-
-    .input-wrap { position: relative; }
-
-    .input-icon {
-      position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
-      font-size: 18px; opacity: .6; pointer-events: none;
-    }
-
-    .glass-input {
-      width: 100%;
-      padding: 17px 20px 17px 50px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.20);
-      backdrop-filter: blur(40px) saturate(1.6);
-      -webkit-backdrop-filter: blur(40px) saturate(1.6);
-      border: 1.5px solid rgba(255,255,255,0.35);
-      color: rgba(255,255,255,0.98);
-      font-family: inherit; font-size: 16px; font-weight: 500;
-      outline: none;
-      transition: all .3s ease;
-      box-shadow: 
-        0 1.5px 0 rgba(255,255,255,0.4) inset, 
-        0 6px 20px rgba(0,0,0,0.08);
-    }
-    .glass-input::placeholder { color: rgba(255,255,255,0.45); }
-    .glass-input:focus {
-      background: rgba(255,255,255,0.30);
-      border-color: rgba(255,255,255,0.55);
-      box-shadow: 
-        0 2px 0 rgba(255,255,255,0.5) inset, 
-        0 8px 32px rgba(0,0,0,0.12), 
-        0 0 0 4px rgba(255,255,255,0.15);
-    }
-    .glass-input.err {
-      border-color: rgba(248,113,113,0.7);
-      background: rgba(248,113,113,0.15);
-    }
-
-    /* Password toggle */
-    .pw-toggle {
-      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      font-size: 18px; opacity: .55; transition: opacity .2s; padding: 6px;
-    }
-    .pw-toggle:hover { opacity: .85; }
-
-    /* Error message */
-    .error-msg {
-      display: none; align-items: center; gap: 10px;
-      margin-top: 18px; padding: 14px 18px; border-radius: 16px;
-      background: rgba(248,113,113,0.20);
-      border: 1.5px solid rgba(248,113,113,0.4);
-      color: #fff; font-size: 14px; font-weight: 600;
-      backdrop-filter: blur(30px);
-      animation: shake .4s cubic-bezier(.36,.07,.19,.97);
-    }
-    .error-msg.show { display: flex; }
-
-    /* Login button - Liquid Glass Button */
-    .glass-button-wrap {
-      width: 100%; margin-top: 28px;
-      position: relative;
-      cursor: pointer;
-    }
-    .glass-button {
-      width: 100%;
-      padding: 18px 32px;
-      border-radius: 50px;
-      border: 1.5px solid rgba(255,255,255,0.45);
-      cursor: pointer; outline: none;
-      font-family: inherit; font-size: 16px; font-weight: 700;
-      color: rgba(255,255,255,0.98);
-      letter-spacing: -.2px;
-      overflow: hidden; position: relative;
-      background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.45) 0%,
-        rgba(255,255,255,0.25) 50%,
-        rgba(255,255,255,0.35) 100%
-      );
-      backdrop-filter: blur(50px) saturate(1.8) brightness(1.2);
-      -webkit-backdrop-filter: blur(50px) saturate(1.8) brightness(1.2);
-      box-shadow:
-        0 2.5px 0 rgba(255,255,255,0.8) inset,
-        0 -1.5px 0 rgba(255,255,255,0.3) inset,
-        0 14px 40px rgba(0,0,0,0.15),
-        0  4px 12px rgba(0,0,0,0.1);
-      transition: all .35s cubic-bezier(.34,1.56,.64,1);
-    }
-    .glass-button::after {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 50%;
-      border-radius: 50px 50px 0 0;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, transparent 100%);
-      pointer-events: none;
-    }
-    .glass-button-shadow {
-      position: absolute;
-      inset: -2px;
-      border-radius: 50px;
-      background: linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(196, 181, 253, 0.3));
-      filter: blur(20px);
-      opacity: 0;
-      transition: opacity .35s ease;
-      z-index: -1;
-    }
-    .glass-button-wrap:hover .glass-button:not(:disabled) {
-      border-color: rgba(255,255,255,0.6);
-      box-shadow:
-        0 3px 0 rgba(255,255,255,0.9) inset,
-        0 -2px 0 rgba(255,255,255,0.4) inset,
-        0 24px 70px rgba(0,0,0,0.2),
-        0  8px 20px rgba(0,0,0,0.15);
-      transform: translateY(-3px) scale(1.02);
-    }
-    .glass-button-wrap:hover .glass-button-shadow {
-      opacity: 1;
-    }
-    .glass-button:active:not(:disabled) { transform: scale(.98); }
-    .glass-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    /* Loading spinner */
-    .spinner {
-      display: inline-block; width: 18px; height: 18px;
-      border: 2.5px solid rgba(255,255,255,0.3);
-      border-top-color: rgba(255,255,255,0.95);
-      border-radius: 50%; vertical-align: middle; margin-right: 10px;
-      animation: spin .7s linear infinite;
-    }
-
-    /* Footer hint */
-    .hint {
-      text-align: center; margin-top: 24px;
-      font-size: 13px; color: rgba(255,255,255,0.50); font-weight: 500;
-    }
-
-    /* Animations */
-    @keyframes popIn { from{opacity:0;transform:translateY(28px) scale(.93)} to{opacity:1;transform:translateY(0) scale(1)} }
-    @keyframes spin  { to{ transform: rotate(360deg); } }
-    @keyframes shake {
-      10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
-      30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)}
-    }
-
-    @media(max-width:480px){
-      .card{ padding: 36px 26px 32px; }
-    }
-  </style>
+  .spinner {
+    display: inline-block; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,0.20);
+    border-top-color: rgba(255,255,255,0.80);
+    border-radius: 50%; vertical-align: middle; margin-right: 7px;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to{ transform: rotate(360deg); } }
+</style>
 </head>
 <body>
 
-  <div class="bg"></div>
-  <div class="orb o1"></div>
-  <div class="orb o2"></div>
-  <div class="orb o3"></div>
-  <div class="orb o4"></div>
+<div class="scene">
+  <canvas id="ribbons"></canvas>
 
-  <div class="page">
-
-    <div class="badge">
-      <span class="badge-dot"></span>
-      <span>App Launcher</span>
+  <div class="card">
+    <div class="heading">
+      <div class="line1">App<span>Launcher</span></div>
+      <div class="line2">Welcomes</div>
     </div>
 
-    <div class="card">
+    <div class="login-label">LOGIN</div>
 
-      <div class="card-icon">🚀</div>
-      <div class="card-title">Welcome back</div>
-      <div class="card-sub">Sign in to manage your apps</div>
-
-      <div class="field">
-        <label class="field-label" for="username">Username</label>
-        <div class="input-wrap">
-          <span class="input-icon">👤</span>
-          <input class="glass-input" type="text" id="username" placeholder="Enter username" autocomplete="username" onkeypress="if(event.key==='Enter') tryLogin()">
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label" for="password">Password</label>
-        <div class="input-wrap">
-          <span class="input-icon">🔒</span>
-          <input class="glass-input" type="password" id="password" placeholder="Enter password" autocomplete="current-password" onkeypress="if(event.key==='Enter') tryLogin()">
-          <button class="pw-toggle" type="button" onclick="togglePw()" id="pwToggle" title="Show/hide password">👁️</button>
-        </div>
-      </div>
-
-      <div class="error-msg" id="errMsg">
-        ⚠️ <span id="errText">Invalid username or password</span>
-      </div>
-
-      <div class="glass-button-wrap">
-        <button class="glass-button" id="loginBtn" onclick="tryLogin()">
-          <span id="btnContent">Sign In</span>
-        </button>
-        <div class="glass-button-shadow"></div>
-      </div>
-
-      <div class="hint">Hint: It's Secure 🔐</div>
-
+    <div class="input-wrap">
+      <input class="glass-input" type="text" id="username" placeholder="Username" onkeypress="if(event.key==='Enter')tryLogin()">
+      <span class="input-icon">👤</span>
     </div>
 
+    <div class="input-wrap">
+      <input class="glass-input" type="password" id="password" placeholder="••••••••••" onkeypress="if(event.key==='Enter')tryLogin()">
+      <span class="input-icon">🔒</span>
+    </div>
+
+    <div class="btn-wrap">
+      <button class="login-btn" id="loginBtn" onclick="tryLogin()">
+        <span id="btnText">LOGIN</span>
+      </button>
+    </div>
+
+    <div class="footer-links">
+      <a>Remember me</a>
+      <a>Forgot password?</a>
+    </div>
   </div>
+</div>
 
-  <script>
-    function togglePw() {
-      const inp = document.getElementById('password');
-      const btn = document.getElementById('pwToggle');
-      if (inp.type === 'password') {
-        inp.type = 'text';
-        btn.textContent = '🙈';
-      } else {
-        inp.type = 'password';
-        btn.textContent = '👁️';
-      }
-    }
+<script>
+const canvas = document.getElementById('ribbons');
+const ctx = canvas.getContext('2d');
+const W = 420, H = 520;
+canvas.width = W; canvas.height = H;
 
-    function showError(msg) {
-      const el = document.getElementById('errMsg');
-      document.getElementById('errText').textContent = msg;
-      el.classList.add('show');
-      document.getElementById('username').classList.add('err');
-      document.getElementById('password').classList.add('err');
-      el.style.animation = 'none';
-      el.offsetHeight;
-      el.style.animation = '';
-    }
+const ribbons = [
+  { color: [[0,200,150],[0,255,180]],   phase: 0,   speed: 0.007, amp: 55, freq: 0.012, yBase: 0.52, thick: 38, alpha: 0.55 },
+  { color: [[0,180,130],[20,240,160]],  phase: 1.2, speed: 0.009, amp: 40, freq: 0.014, yBase: 0.58, thick: 22, alpha: 0.40 },
+  { color: [[0,220,170],[0,200,140]],   phase: 2.5, speed: 0.006, amp: 65, freq: 0.010, yBase: 0.45, thick: 15, alpha: 0.30 },
+  { color: [[120,60,220],[180,80,255]], phase: 0.8, speed: 0.008, amp: 50, freq: 0.011, yBase: 0.48, thick: 30, alpha: 0.50 },
+  { color: [[100,40,200],[160,60,240]], phase: 2.0, speed: 0.010, amp: 35, freq: 0.013, yBase: 0.55, thick: 18, alpha: 0.35 },
+  { color: [[220,60,140],[255,80,160]], phase: 1.5, speed: 0.007, amp: 45, freq: 0.012, yBase: 0.72, thick: 25, alpha: 0.45 },
+  { color: [[200,40,120],[240,60,150]], phase: 3.0, speed: 0.009, amp: 30, freq: 0.015, yBase: 0.78, thick: 14, alpha: 0.30 },
+  { color: [[0,200,180],[0,240,200]],   phase: 0.4, speed: 0.011, amp: 28, freq: 0.016, yBase: 0.38, thick: 10, alpha: 0.25 },
+];
 
-    function clearError() {
-      document.getElementById('errMsg').classList.remove('show');
-      document.getElementById('username').classList.remove('err');
-      document.getElementById('password').classList.remove('err');
-    }
+let t = 0;
 
-    async function tryLogin() {
-      const btn = document.getElementById('loginBtn');
-      const content = document.getElementById('btnContent');
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
+function drawRibbon(r) {
+  const points = [];
+  for (let x = 0; x <= W; x += 3) {
+    const y = r.yBase * H
+      + Math.sin(x * r.freq + t * r.speed * 60 + r.phase) * r.amp
+      + Math.sin(x * r.freq * 0.5 + t * r.speed * 40 + r.phase + 1) * (r.amp * 0.4);
+    points.push([x, y]);
+  }
 
-      clearError();
+  ctx.beginPath();
+  ctx.moveTo(points[0][0], points[0][1] - r.thick / 2);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i][0], points[i][1] - r.thick / 2);
+  }
+  for (let i = points.length - 1; i >= 0; i--) {
+    ctx.lineTo(points[i][0], points[i][1] + r.thick / 2);
+  }
+  ctx.closePath();
 
-      if (!username || !password) {
-        showError('Please fill in both fields');
-        return;
-      }
+  const grd = ctx.createLinearGradient(0, 0, W, 0);
+  const c1 = r.color[0], c2 = r.color[1];
+  grd.addColorStop(0,   `rgba(${c1[0]},${c1[1]},${c1[2]},0)`);
+  grd.addColorStop(0.2, `rgba(${c1[0]},${c1[1]},${c1[2]},${r.alpha})`);
+  grd.addColorStop(0.5, `rgba(${c2[0]},${c2[1]},${c2[2]},${r.alpha * 1.2})`);
+  grd.addColorStop(0.8, `rgba(${c1[0]},${c1[1]},${c1[2]},${r.alpha})`);
+  grd.addColorStop(1,   `rgba(${c1[0]},${c1[1]},${c1[2]},0)`);
 
-      btn.disabled = true;
-      content.innerHTML = '<span class="spinner"></span>Signing in…';
+  ctx.fillStyle = grd;
+  ctx.fill();
+}
 
-      await new Promise(r => setTimeout(r, 800));
+function animate(ts) {
+  t = ts * 0.001;
+  ctx.clearRect(0, 0, W, H);
 
-      if (username === 'Admin' && password === 'Admin@123') {
-        content.innerHTML = '✓ Success!';
-        btn.style.background = 'linear-gradient(135deg, rgba(74,222,128,0.5) 0%, rgba(74,222,128,0.3) 100%)';
-        btn.style.borderColor = 'rgba(74,222,128,0.6)';
-        
-        setTimeout(() => {
-          window.location.href = './admin.html';
-        }, 600);
-      } else {
-        btn.disabled = false;
-        content.innerHTML = 'Sign In';
-        if (username !== 'Admin') {
-          showError('Username not found');
-        } else {
-          showError('Incorrect password');
-        }
-      }
-    }
+  ctx.save();
+  ctx.filter = 'blur(12px)';
+  ribbons.forEach(r => drawRibbon({ ...r, thick: r.thick * 1.8, alpha: r.alpha * 0.5 }));
+  ctx.restore();
 
-    document.getElementById('username').focus();
-  </script>
+  ribbons.forEach(r => drawRibbon(r));
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
 
+async function tryLogin() {
+  const btn = document.getElementById('loginBtn');
+  const txt = document.getElementById('btnText');
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  if (!u || !p) {
+    btn.style.borderColor = 'rgba(255,80,80,0.5)';
+    setTimeout(() => btn.style.borderColor = '', 800);
+    return;
+  }
+  btn.disabled = true;
+  txt.innerHTML = '<span class="spinner"></span>';
+  await new Promise(r => setTimeout(r, 900));
+  if (u === 'Admin' && p === 'Admin@123') {
+    txt.textContent = '✓';
+    btn.style.borderColor = 'rgba(0,229,180,0.6)';
+    btn.style.color = '#00e5cc';
+    setTimeout(() => { window.location.href = './admin.html'; }, 700);
+  } else {
+    btn.disabled = false;
+    txt.textContent = 'LOGIN';
+    btn.style.borderColor = 'rgba(255,80,80,0.5)';
+    setTimeout(() => btn.style.borderColor = '', 1000);
+  }
+}
+</script>
 </body>
 </html>
