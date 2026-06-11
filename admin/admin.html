@@ -18,7 +18,7 @@
        — this is what the glass refracts
        ══════════════════════════════════════ */
     body {
-      background: #0c0c14;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       position: relative;
       min-height: 100vh;
     }
@@ -27,31 +27,28 @@
     .bg {
       position: fixed; inset: 0; z-index: 0;
       background:
-        radial-gradient(ellipse 65% 55% at 12% 18%,  #7c3aed 0%, transparent 58%),
-        radial-gradient(ellipse 50% 60% at 85% 12%,  #0ea5e9 0%, transparent 55%),
-        radial-gradient(ellipse 60% 50% at 75% 82%,  #ec4899 0%, transparent 52%),
-        radial-gradient(ellipse 45% 50% at 18% 80%,  #10b981 0%, transparent 50%),
-        radial-gradient(ellipse 35% 35% at 50% 48%,  #f59e0b 0%, transparent 55%),
-        #0c0c14;
+        radial-gradient(ellipse 80% 70% at 15% 20%,  rgba(147, 197, 253, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 60% at 85% 15%,  rgba(196, 181, 253, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse 65% 55% at 75% 85%,  rgba(165, 243, 252, 0.3) 0%, transparent 48%),
+        radial-gradient(ellipse 50% 50% at 25% 80%,  rgba(199, 210, 254, 0.35) 0%, transparent 52%),
+        linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     /* Animated soft orbs floating */
     .orb {
       position: fixed; border-radius: 50%;
-      filter: blur(72px); pointer-events: none; z-index: 0;
-      mix-blend-mode: screen;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+      mix-blend-mode: overlay;
     }
-    .o1 { width: 580px; height: 580px; background: #7c3aed; opacity: .55; top: -160px; left: -120px; animation: f1 26s ease-in-out infinite; }
-    .o2 { width: 480px; height: 480px; background: #0ea5e9; opacity: .50; top: -40px; right: -80px; animation: f2 32s ease-in-out infinite; }
-    .o3 { width: 420px; height: 420px; background: #ec4899; opacity: .50; bottom: -80px; right: 5%;  animation: f3 22s ease-in-out infinite; }
-    .o4 { width: 380px; height: 380px; background: #10b981; opacity: .45; bottom: -60px; left: 8%;  animation: f4 28s ease-in-out infinite; }
-    .o5 { width: 280px; height: 280px; background: #f59e0b; opacity: .40; top: 42%; left: 42%;      animation: f5 19s ease-in-out infinite; }
+    .o1 { width: 500px; height: 500px; background: rgba(147, 197, 253, 0.5); top: -180px; left: -140px; animation: f1 28s ease-in-out infinite; }
+    .o2 { width: 420px; height: 420px; background: rgba(196, 181, 253, 0.45); top: -60px; right: -100px; animation: f2 34s ease-in-out infinite; }
+    .o3 { width: 380px; height: 380px; background: rgba(165, 243, 252, 0.4); bottom: -100px; right: 8%;  animation: f3 24s ease-in-out infinite; }
+    .o4 { width: 350px; height: 350px; background: rgba(199, 210, 254, 0.4); bottom: -80px; left: 10%;  animation: f4 30s ease-in-out infinite; }
 
-    @keyframes f1 { 0%,100%{transform:translate(0,0) scale(1)}   40%{transform:translate(70px,90px) scale(1.1)}  70%{transform:translate(-30px,40px) scale(.93)} }
-    @keyframes f2 { 0%,100%{transform:translate(0,0) scale(1)}   35%{transform:translate(-80px,65px) scale(1.08)} 65%{transform:translate(40px,-35px) scale(.92)} }
-    @keyframes f3 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(50px,-70px) scale(1.12)} }
-    @keyframes f4 { 0%,100%{transform:translate(0,0) scale(1)}   45%{transform:translate(-45px,50px) scale(1.07)} }
-    @keyframes f5 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(30px,-35px) scale(1.09)} }
+    @keyframes f1 { 0%,100%{transform:translate(0,0) scale(1)}   45%{transform:translate(60px,80px) scale(1.08)}  75%{transform:translate(-25px,35px) scale(.95)} }
+    @keyframes f2 { 0%,100%{transform:translate(0,0) scale(1)}   40%{transform:translate(-70px,55px) scale(1.06)} 70%{transform:translate(35px,-30px) scale(.94)} }
+    @keyframes f3 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(45px,-60px) scale(1.10)} }
+    @keyframes f4 { 0%,100%{transform:translate(0,0) scale(1)}   48%{transform:translate(-40px,45px) scale(1.05)} }
 
     /* ══════════════════════════════════════
        LIQUID GLASS MATERIAL
