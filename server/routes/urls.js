@@ -1,48 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
 const https = require('https');
 const http = require('http');
 const { randomUUID } = require('crypto');
-
-const URLS_FILE = path.join(__dirname, '../urls.json');
-
-// Helper to read URLs from file
-async function readURLs() {
-  try {
-    const data = await fs.readFile(URLS_FILE, 'utf8');
-    const urls = JSON.parse(data);
-    
-    // Migration: Add missing fields to old entries
-    let needsSave = false;
-    urls.forEach(url => {
-      if (!url.hasOwnProperty('customName')) {
-        url.customName = null;
-        needsSave = true;
-      }
-      if (!url.hasOwnProperty('pinned')) {
-        url.pinned = false;
-        needsSave = true;
-      }
-    });
-    
-    // Save migrated data
-    if (needsSave) {
-      console.log('🔄 Migrating old entries with new fields...');
-      await writeURLs(urls);
-    }
-    
-    return urls;
-  } catch (error) {
-    return [];
-  }
-}
-
-// Helper to write URLs to file
-async function writeURLs(urls) {
-  await fs.writeFile(URLS_FILE, JSON.stringify(urls, null, 2));
-}
+const URL_MODEL = require('../models/URL');
 
 // Helper to fetch page title and favicon
 function fetchPageMetadata(url) {
@@ -180,9 +141,10 @@ function extractDomain(url) {
 // GET /urls - Get all URLs
 router.get('/', async (req, res) => {
   try {
-    const urls = await readURLs();
+    const urls = await URL_MODEL.find().sort({ pinned: -1, publishedAt: -1 });
     res.json(urls);
   } catch (error) {
+    console.error('❌ Error fetching URLs:', error);
     res.status(500).json({ error: 'Failed to read URLs' });
   }
 });
@@ -206,10 +168,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid URL format' });
     }
     
-    const urls = await readURLs();
-    
     // Check for duplicate URL
-    const existingUrl = urls.find(item => item.url === url);
+    const existingUrl = await URL_MODEL.findOne({ url });
     if (existingUrl) {
       console.log(`⚠️ Duplicate URL detected: ${url}`);
       return res.status(409).json({ 
@@ -243,19 +203,18 @@ router.post('/', async (req, res) => {
       favicon = metadata.favicon;
     }
     
-    // Create new entry
-    const newEntry = {
+    // Create new entry in MongoDB
+    const newEntry = new URL_MODEL({
       id: randomUUID(),
       url,
       favicon,
       title,
       customName: customName || null,
       pinned: false,
-      publishedAt: new Date().toISOString()
-    };
+      publishedAt: new Date()
+    });
     
-    urls.push(newEntry);
-    await writeURLs(urls);
+    await newEntry.save();
     
     console.log(`✅ Published: ${customName || title} (${url})`);
     res.status(201).json(newEntry);
@@ -269,24 +228,24 @@ router.post('/', async (req, res) => {
 router.post('/:id/pin', async (req, res) => {
   try {
     const { id } = req.params;
-    const urls = await readURLs();
     
-    const urlEntry = urls.find(item => item.id === id);
+    const urlEntry = await URL_MODEL.findOne({ id });
     
     if (!urlEntry) {
       return res.status(404).json({ error: 'URL not found' });
     }
     
     // Check if trying to pin when already at limit
-    const pinnedCount = urls.filter(u => u.pinned).length;
-    if (!urlEntry.pinned && pinnedCount >= 5) {
-      return res.status(400).json({ error: 'Maximum 5 apps can be pinned' });
+    if (!urlEntry.pinned) {
+      const pinnedCount = await URL_MODEL.countDocuments({ pinned: true });
+      if (pinnedCount >= 5) {
+        return res.status(400).json({ error: 'Maximum 5 apps can be pinned' });
+      }
     }
     
     // Toggle pin status
     urlEntry.pinned = !urlEntry.pinned;
-    
-    await writeURLs(urls);
+    await urlEntry.save();
     
     console.log(`${urlEntry.pinned ? '📌 Pinned' : '📍 Unpinned'}: ${urlEntry.customName || urlEntry.title}`);
     res.json({ success: true, pinned: urlEntry.pinned });
@@ -300,19 +259,17 @@ router.post('/:id/pin', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const urls = await readURLs();
     
-    const index = urls.findIndex(item => item.id === id);
+    const result = await URL_MODEL.deleteOne({ id });
     
-    if (index === -1) {
+    if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'URL not found' });
     }
     
-    urls.splice(index, 1);
-    await writeURLs(urls);
-    
+    console.log(`🗑️ Deleted URL: ${id}`);
     res.json({ success: true, message: 'URL deleted' });
   } catch (error) {
+    console.error(`❌ Error deleting URL:`, error);
     res.status(500).json({ error: 'Failed to delete URL' });
   }
 });
