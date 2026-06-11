@@ -19,12 +19,49 @@ import (
 )
 
 var (
-	user32           = syscall.NewLazyDLL("user32.dll")
-	procGetCursorPos = user32.NewProc("GetCursorPos")
+	user32            = syscall.NewLazyDLL("user32.dll")
+	procGetCursorPos  = user32.NewProc("GetCursorPos")
 	procGetWindowLong = user32.NewProc("GetWindowLongW")
 	procSetWindowLong = user32.NewProc("SetWindowLongW")
-	procFindWindow   = user32.NewProc("FindWindowW")
+	procFindWindow    = user32.NewProc("FindWindowW")
+	procShowWindow    = user32.NewProc("ShowWindow")
+	procSetParent     = user32.NewProc("SetParent")
 )
+
+const (
+	WS_EX_TOOLWINDOW = 0x00000080
+	WS_EX_APPWINDOW  = 0x00040000
+	SW_HIDE          = 0
+	SW_SHOW          = 5
+	HWND_MESSAGE     = ^uintptr(2) // -3, special parent for message-only windows
+)
+
+func hideFromTaskbar() bool {
+	title, _ := syscall.UTF16PtrFromString("AppLauncher_Wails_Invisible_Overlay")
+	hwnd, _, _ := procFindWindow.Call(0, uintptr(unsafe.Pointer(title)))
+	if hwnd == 0 {
+		return false
+	}
+	
+	// Method 1: Set extended window style
+	exStyle, _, _ := procGetWindowLong.Call(hwnd, ^uintptr(19))
+	exStyle |= WS_EX_TOOLWINDOW
+	exStyle &^= WS_EX_APPWINDOW
+	procSetWindowLong.Call(hwnd, ^uintptr(19), exStyle)
+	
+	// Method 2: Set owner to desktop window (stronger approach)
+	// This makes the window owned by desktop, which prevents taskbar icon
+	procSetParent.Call(hwnd, HWND_MESSAGE)
+	procSetParent.Call(hwnd, 0) // Reset to no parent but keep the effect
+	
+	// Force refresh
+	procShowWindow.Call(hwnd, SW_HIDE)
+	time.Sleep(10 * time.Millisecond)
+	procShowWindow.Call(hwnd, SW_SHOW)
+	
+	fmt.Println("🚫 Hidden from taskbar")
+	return true
+}
 
 type POINT struct {
 	X int32
@@ -120,6 +157,19 @@ func (a *App) startup(ctx context.Context) {
 	// Add to startup on launch
 	addToStartup()
 	cleanUpOldExecutable()
+
+	// Hide from taskbar using Windows API - do it IMMEDIATELY and aggressively
+	go func() {
+		for i := 0; i < 10; i++ {
+			time.Sleep(50 * time.Millisecond)
+			if hideFromTaskbar() {
+				// Keep trying a few more times to ensure it stays hidden
+				time.Sleep(200 * time.Millisecond)
+				hideFromTaskbar()
+				break
+			}
+		}
+	}()
 
 	// Check for updates
 	go a.CheckForUpdates()
@@ -238,7 +288,7 @@ func (a *App) QuitApp() {
 	runtime.Quit(a.ctx)
 }
 
-const currentVersion = "v1.1.3"
+const currentVersion = "v1.1.4"
 const repoURL = "https://api.github.com/repos/Adi-0-0-8/APP_LAUNCHER/releases/latest"
 
 type ReleaseInfo struct {
