@@ -291,7 +291,7 @@ func (a *App) QuitApp() {
 	runtime.Quit(a.ctx)
 }
 
-const currentVersion = "v1.1.4"
+const currentVersion = "v1.1.5"
 const repoURL = "https://api.github.com/repos/Adi-0-0-8/APP_LAUNCHER/releases/latest"
 
 type ReleaseInfo struct {
