@@ -187,11 +187,11 @@ func (a *App) startup(ctx context.Context) {
 			}
 		}
 		a.winHeight = primary.Size.Height
-		runtime.WindowSetSize(ctx, 68, a.winHeight)
+		runtime.WindowSetSize(ctx, 160, a.winHeight)
 	} else {
 		// Fallback
 		a.winHeight = 1080
-		runtime.WindowSetSize(ctx, 68, a.winHeight)
+		runtime.WindowSetSize(ctx, 160, a.winHeight)
 	}
 
 	// Position window on left edge of screen
@@ -240,11 +240,14 @@ func (a *App) monitorMouse() {
 		triggerTop := physicalCenterY - 45
 		triggerBottom := physicalCenterY + 45
 
+		drawerTop := float64(a.winHeight) * 0.15
+		drawerBottom := float64(a.winHeight) * 0.85
+
 		if !isExpanded && x <= 20 && y >= triggerTop && y <= triggerBottom {
 			isExpanded = true
 			setClickThrough(false)
 			runtime.EventsEmit(a.ctx, "expanded")
-		} else if isExpanded && x > 150 {
+		} else if isExpanded && (x > 220 || float64(y) < drawerTop || float64(y) > drawerBottom) {
 			isExpanded = false
 			setClickThrough(true)
 			runtime.EventsEmit(a.ctx, "collapsed")

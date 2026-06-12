@@ -19,7 +19,7 @@ func main() {
 	// Create application with options - sidebar on left edge
 	err := wails.Run(&options.App{
 		Title:         "AppLauncher_Wails_Invisible_Overlay",
-		Width:         68,
+		Width:         160,
 		Height:        900,
 		Frameless:     true,
 		AlwaysOnTop:   true,

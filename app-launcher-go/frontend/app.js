@@ -34,7 +34,7 @@ function showAppList() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('errorState').style.display = 'none';
-  document.getElementById('appList').style.display = 'flex';
+  document.getElementById('appList').style.display = '';
 }
 
 // Open URL in default browser
