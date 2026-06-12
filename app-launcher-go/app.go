@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
 	"unsafe"
@@ -329,7 +328,7 @@ func (a *App) CheckForUpdates() {
 func (a *App) InstallUpdate() error {
 	downloadURL := ""
 	for _, asset := range latestUpdate.Assets {
-		if strings.HasSuffix(asset.Name, ".exe") {
+		if asset.Name == "app-launcher-go.exe" {
 			downloadURL = asset.BrowserDownloadURL
 			break
 		}

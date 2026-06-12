@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'electron-app/**'
+      - 'app-launcher-go/**'
       - '.github/workflows/release.yml'
 
 jobs:
@@ -53,12 +53,19 @@ jobs:
             echo "Release v$version does not exist, will create"
           }
 
-      - name: Build Electron app
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Setup Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Build Wails app
         if: steps.check-release.outputs.exists == 'false'
         run: |
-          cd electron-app
-          npm run build
-          npx electron-builder --win nsis --config
+          cd app-launcher-go
+          wails build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -74,20 +81,12 @@ jobs:
             Auto-generated release from latest commit.
             
             ### 📦 Download:
-            - **AppLauncher-Setup.exe** - Recommended (supports auto-update)
-            - **AppLauncher-Portable.exe** - Portable version
+            - **app-launcher-go.exe** - Wails Go application
             
             ### 📝 Changes:
             ${{ github.event.head_commit.message }}
-            
-            ---
-            
-            **For existing users:** Your app will auto-update when you restart it.
-            **For new users:** Download and run AppLauncher-Setup.exe
           files: |
-            electron-app/dist/AppLauncher-Setup.exe
-            electron-app/dist/AppLauncher-Portable.exe
-            electron-app/dist/latest.yml
+            app-launcher-go/build/bin/app-launcher-go.exe
           draft: false
           prerelease: false
         env:
