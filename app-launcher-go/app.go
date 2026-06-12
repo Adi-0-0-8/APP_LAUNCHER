@@ -221,6 +221,7 @@ func (a *App) monitorMouse() {
 
 		// Get exact physical window boundaries using Win32 API to completely bypass DPI scaling offsets
 		var physicalCenterY int
+		var physicalRight int
 		title, _ := syscall.UTF16PtrFromString("AppLauncher_Wails_Invisible_Overlay")
 		hwnd, _, _ := procFindWindow.Call(0, uintptr(unsafe.Pointer(title)))
 		if hwnd != 0 {
@@ -229,25 +230,29 @@ func (a *App) monitorMouse() {
 			}
 			user32.NewProc("GetWindowRect").Call(hwnd, uintptr(unsafe.Pointer(&rect)))
 			physicalCenterY = int(rect.Top + (rect.Bottom-rect.Top)/2)
+			physicalRight = int(rect.Right)
 		} else {
 			// Fallback if window not found
 			_, winY := runtime.WindowGetPosition(a.ctx)
 			_, winHeight := runtime.WindowGetSize(a.ctx)
 			physicalCenterY = winY + (winHeight / 2)
+			physicalRight = 220
 		}
 
 		// The purple pill is exactly 80px tall (40px up and down from center)
 		triggerTop := physicalCenterY - 45
 		triggerBottom := physicalCenterY + 45
 
-		drawerTop := float64(a.winHeight) * 0.15
-		drawerBottom := float64(a.winHeight) * 0.85
+		// Use physicalCenterY to establish a generous physical bounding box
+		drawerTop := float64(physicalCenterY) - 500.0 // Very safe upper bound
+		drawerBottom := float64(physicalCenterY) + 500.0 // Very safe lower bound
+		rightBound := physicalRight + 20
 
 		if !isExpanded && x <= 20 && y >= triggerTop && y <= triggerBottom {
 			isExpanded = true
 			setClickThrough(false)
 			runtime.EventsEmit(a.ctx, "expanded")
-		} else if isExpanded && (x > 220 || float64(y) < drawerTop || float64(y) > drawerBottom) {
+		} else if isExpanded && (x > rightBound || float64(y) < drawerTop || float64(y) > drawerBottom) {
 			isExpanded = false
 			setClickThrough(true)
 			runtime.EventsEmit(a.ctx, "collapsed")
@@ -291,7 +296,7 @@ func (a *App) QuitApp() {
 	runtime.Quit(a.ctx)
 }
 
-const currentVersion = "v1.1.5"
+const currentVersion = "v1.0.0"
 const repoURL = "https://api.github.com/repos/Adi-0-0-8/APP_LAUNCHER/releases/latest"
 
 type ReleaseInfo struct {
